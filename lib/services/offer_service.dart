@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart';
 
 import 'api_client.dart';
 import '../models/job_offer.dart';

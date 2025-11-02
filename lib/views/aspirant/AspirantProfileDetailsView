@@ -1,0 +1,127 @@
+import 'package:flutter/material.dart';
+import '../../models/aspirant_profile.dart';
+import '../../models/skill.dart';
+import '../../models/experience_item.dart';
+
+class AspirantProfileDetailsView extends StatelessWidget {
+  final AspirantProfile profile;
+  
+  const AspirantProfileDetailsView({required this.profile, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('CV de ${profile.name}')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // --- Resumen Personal ---
+            _buildHeader(context, 'Información Personal', Icons.person),
+            Text(profile.name, style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 8),
+            _buildDetailRow(Icons.email, profile.email),
+            if (profile.phone != null) _buildDetailRow(Icons.phone, profile.phone!),
+            
+            const Divider(height: 30),
+
+            // --- Resumen ---
+            if (profile.summary != null && profile.summary!.isNotEmpty) ...[
+              _buildHeader(context, 'Resumen Profesional', Icons.text_snippet),
+              Text(profile.summary!, style: const TextStyle(fontSize: 16)),
+              const Divider(height: 30),
+            ],
+
+            // --- Experiencia Laboral ---
+            _buildHeader(context, 'Experiencia Laboral', Icons.work),
+            if (profile.experience.isEmpty) const Text('No hay experiencia registrada.'),
+            ...profile.experience.map((exp) => ExperienceCard(item: exp)).toList(),
+            
+            const Divider(height: 30),
+
+            // --- Habilidades ---
+            _buildHeader(context, 'Habilidades', Icons.star),
+            if (profile.skills.isEmpty) const Text('No hay habilidades registradas.'),
+            _buildSkillsGrid(profile.skills),
+            
+            const SizedBox(height: 50),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- Widgets Auxiliares ---
+  Widget _buildHeader(BuildContext context, String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Theme.of(context).primaryColor),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[700]),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkillsGrid(List<Skill> skills) {
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 8.0,
+      children: skills.map((skill) => Chip(
+        label: Text(skill.name),
+        backgroundColor: Colors.blue.shade50,
+      )).toList(),
+    );
+  }
+}
+
+// --- Tarjeta de Experiencia ---
+class ExperienceCard extends StatelessWidget {
+  final ExperienceItem item;
+
+  const ExperienceCard({required this.item, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(item.title, style: Theme.of(context).textTheme.titleMedium),
+            Text('${item.companyName} | ${item.location}', style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 4),
+            Text('${item.startDate} - ${item.endDate ?? 'Actualidad'}', style: const TextStyle(fontSize: 12)),
+            if (item.description != null && item.description!.isNotEmpty) 
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(item.description!),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -11,6 +11,20 @@ enum UserRole {
   admin,
 }
 
+extension UserRoleExtension on UserRole {
+  // Este método devuelve el valor de string que NestJS espera
+  String toJson() {
+    switch (this) {
+      case UserRole.aspirante:
+        return 'ASPIRANTE';
+      case UserRole.empresa:
+        return 'EMPRESA';
+      case UserRole.admin:
+        return 'ADMIN';
+    }
+  }
+}
+
 @JsonSerializable()
 class User {
   final int id;

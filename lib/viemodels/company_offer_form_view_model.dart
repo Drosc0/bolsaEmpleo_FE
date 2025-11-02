@@ -8,7 +8,7 @@ class CompanyOfferFormViewModel extends ChangeNotifier {
   // Estado
   bool _isLoading = false;
   String? _errorMessage;
-  JobOffer? _initialOffer; // Oferta si estamos editando
+  final JobOffer? _initialOffer; // Oferta si estamos editando
   
   // Datos del Formulario (controlados por la Vista)
   final TextEditingController titleController = TextEditingController();
@@ -29,7 +29,7 @@ class CompanyOfferFormViewModel extends ChangeNotifier {
       descriptionController.text = offer.description;
       locationController.text = offer.location;
       // Convertir número a string para el TextField
-      salaryController.text = offer.salary?.toStringAsFixed(0) ?? '';
+      salaryController.text = offer.salary.toStringAsFixed(0);
       // Unir la lista de requisitos en un solo texto (ej: separados por línea)
       requirementsController.text = offer.requirements?.join('\n') ?? ''; 
     }

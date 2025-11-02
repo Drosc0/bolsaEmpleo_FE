@@ -23,9 +23,8 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('jwt_token', token);
 
-    // ⚠️ Nota: Necesitas una función para decodificar el token JWT y obtener el User object.
+    // ⚠️ Nota: Necesario una función para decodificar el token JWT y obtener el User object.
     // Esto es un placeholder; la implementación real requiere un paquete como 'jwt_decoder'.
-    // Por simplicidad, retornaremos un objeto básico:
     return User(id: 1, email: email, role: UserRole.aspirante); 
   }
 

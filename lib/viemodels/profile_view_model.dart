@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/profile_service.dart';
 import '../models/aspirant_profile.dart';
-import '../models/skill.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final ProfileService _profileService = ProfileService();
@@ -9,7 +8,6 @@ class ProfileViewModel extends ChangeNotifier {
   // Estado
   AspirantProfile? _profile;
   bool _isLoadingProfile = false;
-  String? _profileError;
   bool _isSaving = false;
 
   // Getters Públicos
@@ -22,13 +20,11 @@ class ProfileViewModel extends ChangeNotifier {
   /// Carga el perfil completo del aspirante desde el backend.
   Future<void> fetchProfile() async {
     _isLoadingProfile = true;
-    _profileError = null;
     notifyListeners();
 
     try {
       _profile = await _profileService.getMyProfile();
     } catch (e) {
-      _profileError = 'Error al cargar el perfil: ${e.toString()}';
       _profile = null;
     } finally {
       _isLoadingProfile = false;

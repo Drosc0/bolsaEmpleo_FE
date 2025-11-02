@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart';
 
 import '../models/aspirant_profile.dart';
 import '../models/skill.dart';

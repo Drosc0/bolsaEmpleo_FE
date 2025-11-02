@@ -13,6 +13,12 @@ class JobOffer {
   
   // Asumimos que la API devuelve el nombre de la empresa como parte de la oferta
   final String companyName; 
+  
+  // Lista de requisitos
+  final List<String>? requirements; 
+  
+  // Contador de postulantes (útil en CompanyHomeView)
+  final int? applicationsCount; 
 
   JobOffer({
     required this.id,
@@ -22,6 +28,8 @@ class JobOffer {
     required this.salary,
     required this.postedAt,
     required this.companyName,
+    this.requirements, 
+    this.applicationsCount,
   });
 
   factory JobOffer.fromJson(Map<String, dynamic> json) => _$JobOfferFromJson(json);

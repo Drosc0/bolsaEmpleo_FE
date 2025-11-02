@@ -114,12 +114,11 @@ class ApplicationCard extends StatelessWidget {
           ],
         ),
         trailing: Text(
-          '${application.appliedAt.toLocal().toString().split(' ')[0]}',
+          application.appliedAt.toLocal().toString().split(' ')[0],
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         onTap: () {
-          // ⚠️ Opcional: Navegar a una vista de detalles de la postulación 
-          // que muestre los comentarios (application.comments) de la empresa.
+          // navegar a mostrar detalles
         },
       ),
     );
