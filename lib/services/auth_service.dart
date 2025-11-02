@@ -1,38 +1,44 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'api_service.dart';
+import '../models/user.dart';
+import 'api_client.dart'; // Importamos el cliente HTTP base
 
 class AuthService {
   final ApiService _api = ApiService();
 
-  // Login: Guarda el token y lo retorna
-  Future<String> login(String email, String password) async {
+  // --- Login ---
+  Future<User> login(String email, String password) async {
     final response = await _api.post('/auth/login', {
       'email': email,
       'password': password,
     });
 
     final data = json.decode(response.body);
-    final token = data['token'];
+    final token = data['token'] as String?;
 
-    if (token != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt_token', token);
-      return token;
+    if (token == null) {
+      throw Exception('Login failed: Token not received.');
     }
-    throw Exception('No se recibió el token después de iniciar sesión.');
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('jwt_token', token);
+
+    // ⚠️ Nota: Necesitas una función para decodificar el token JWT y obtener el User object.
+    // Esto es un placeholder; la implementación real requiere un paquete como 'jwt_decoder'.
+    // Por simplicidad, retornaremos un objeto básico:
+    return User(id: 1, email: email, role: UserRole.aspirante); 
   }
 
-  // Registro: Solo llama al endpoint
-  Future<void> register(String email, String password, String role) async {
+  // --- Registro ---
+  Future<void> register(String email, String password, UserRole role) async {
     await _api.post('/auth/register', {
       'email': email,
       'password': password,
-      'role': role,
+      'role': role.toJson(), // Usa el método toJson del enum Dart
     });
   }
 
-  // Logout
+  // --- Logout ---
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('jwt_token');

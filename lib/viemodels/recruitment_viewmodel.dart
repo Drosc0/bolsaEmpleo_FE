@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-//import 'package:erp_food_bites/config/config.dart';
+//import 'package:erp_food_bites/config/config.dart'; esto mas adelante
 import '../models/aspirant_profile.dart';
 
 // Nota: Se asume que el token JWT es válido para ambos backends (ERP y Bolsa de Empleo)
