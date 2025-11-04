@@ -6,19 +6,19 @@ class AppTheme {
   // Verde claro primario
   static const Color lightPrimaryGreen = Color(0xFF81C784); // Shade de Light Green 500
   
-  // Anaranjado/Naranja secundario (acento)
+  // Anaranjado/Naranja secundario 
   static const Color accentOrange = Color(0xFFFF9800); // Naranja estándar
   
-  // Color primario oscuro (interpretación de "elestdart" como un azul/gris oscuro y profundo)
+  // Color primario oscuro
   static const Color darkPrimaryDeepBlue = Color(0xFF1A237E); // Deep Indigo/Dark Blue
 
-  // ---------------------------------------------------
+  
   // 1. TEMA CLARO
   // Primario: Verde Clarito
   // Secundario: Anaranjado
-  // ---------------------------------------------------
+ 
   static ThemeData get lightTheme {
-    // Base del tema claro (Material 3)
+    // Base del tema claro
     final base = ThemeData.light();
     return base.copyWith(
       colorScheme: base.colorScheme.copyWith(
@@ -41,11 +41,10 @@ class AppTheme {
     );
   }
 
-  // ---------------------------------------------------
   // 2. TEMA OSCURO
-  // Primario: Estándar Oscuro (Deep Blue)
+  // Primario: Estándar Oscuro 
   // Secundario: Naranja
-  // ---------------------------------------------------
+
   static ThemeData get darkTheme {
     // Base del tema oscuro (Material 3)
     final base = ThemeData.dark();

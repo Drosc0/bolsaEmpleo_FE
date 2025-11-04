@@ -1,7 +1,6 @@
 import 'package:bolsa_empleo/config/theme/app_theme.dart';
 import 'package:bolsa_empleo/config/theme/theme_provider.dart';
-import 'package:bolsa_empleo/core/router/router.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:bolsa_empleo/config/router/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

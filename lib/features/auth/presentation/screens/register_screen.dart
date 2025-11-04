@@ -1,87 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../application/auth/register/register_view_model.dart'; 
 
-// 1. SIMULACIÓN DE PROVEEDOR DE AUTENTICACIÓN (Riverpod)
-// Este Provider será el encargado de interactuar con el ApiService para NestJS
-final registerServiceProvider = Provider((ref) {
-  // Aquí se inyectaría el ApiService o el repositorio de Auth real.
-  // Por ahora, solo simula un servicio.
-  return FakeRegisterService();
-});
-
-class FakeRegisterService {
-  Future<bool> register(String email, String password, String name) async {
-    // Simulando una llamada a la API de NestJS
-    await Future.delayed(const Duration(seconds: 2));
-    if (email.contains('@') && password.length >= 6) {
-      debugPrint('Registro exitoso para: $email');
-      return true;
-    }
-    throw Exception('Error de registro simulado: Datos inválidos.');
-  }
-}
-
-class RegisterScreen extends ConsumerStatefulWidget {
+class RegisterScreen extends ConsumerWidget {
   const RegisterScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 1. OBSERVAMOS EL ESTADO DEL VIEwMODEL
+    final registerState = ref.watch(registerViewModelProvider);
+    // 2. ACCEDEMOS AL NOTIFIER (MÉTODOS)
+    final registerNotifier = ref.read(registerViewModelProvider.notifier);
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
-  bool _isLoading = false;
+    // Controladores de edición local para capturar el input
+    final _formKey = GlobalKey<FormState>();
+    final _nameController = TextEditingController();
+    final _emailController = TextEditingController();
+    final _passwordController = TextEditingController();
 
-  Future<void> _handleRegister() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    // 3. ESCUCHAMOS LOS CAMBIOS DE ESTADO PARA NAVEGAR Y MOSTRAR SNACKBAR
+    ref.listen<RegisterState>(registerViewModelProvider, (previous, current) {
+      // Navegación al registro exitoso
+      if (current.isRegistered && !previous!.isRegistered) {
+        // Mostrar mensaje de éxito y luego ir a la Home o Login
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('¡Registro exitoso! Por favor, inicia sesión.')),
+        );
+        context.go('/login');
+      }
 
-      try {
-        final success = await ref.read(registerServiceProvider).register(
-              _emailController.text,
-              _passwordController.text,
-              _nameController.text,
-            );
+      // Mostrar error
+      if (current.errorMessage != null && current.errorMessage != previous?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fallo en el registro: ${current.errorMessage}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    });
 
-        if (success && mounted) {
-          // Navegar a la pantalla de inicio o a la que corresponda
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('¡Registro exitoso!')),
-          );
-          context.go('/'); // Ejemplo: Ir a la Home
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Fallo en el registro: ${e.toString()}')),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+    // Función de manejo de registro
+    void _handleRegister() {
+      if (_formKey.currentState!.validate() && !registerState.isLoading) {
+        registerNotifier.register(
+          _emailController.text.trim(),
+          _passwordController.text,
+          _nameController.text.trim(),
+        );
       }
     }
-  }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Crear Cuenta')),
       body: Center(
@@ -101,7 +71,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 30),
-                  
+
                   // Campo Nombre Completo
                   TextFormField(
                     controller: _nameController,
@@ -129,7 +99,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       prefixIcon: Icon(Icons.email),
                     ),
                     validator: (value) {
-                      if (value == null || !value.contains('@')) {
+                      if (value == null || !value.contains('@') || !value.contains('.')) {
                         return 'Ingresa un email válido.';
                       }
                       return null;
@@ -157,12 +127,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                   // Botón de Registro
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _handleRegister,
+                    // Deshabilitar si está cargando
+                    onPressed: registerState.isLoading ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: _isLoading
+                    child: registerState.isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
@@ -174,7 +145,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                   // Botón para ir al Login
                   TextButton(
-                    onPressed: () => context.go('/login'),
+                    onPressed: registerState.isLoading ? null : () => context.go('/login'),
                     child: const Text('¿Ya tienes una cuenta? Inicia Sesión'),
                   ),
                 ],
