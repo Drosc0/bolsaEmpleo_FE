@@ -5,8 +5,6 @@ import '../../viemodels/auth_view_model.dart';
 import '../../viemodels/company_offers_view_model.dart';
 import '../../models/job_offer.dart';
 import '../auth/login_view.dart';
-import 'create_or_edit_offer_view.dart'; 
-import 'offer_applications_view.dart'; 
 
 
 class CompanyHomeView extends StatefulWidget {
@@ -40,7 +38,6 @@ class _CompanyHomeViewState extends State<CompanyHomeView> {
 
   // --- Lógica de Navegación ---
   void _navigateToCreateOffer(BuildContext context, [JobOffer? offerToEdit]) {
-    // ⚠️ TODO: Navegación a la vista de creación/edición
     // final vm = Provider.of<CompanyOffersViewModel>(context, listen: false);
     // Navigator.of(context).push(
     //   MaterialPageRoute(builder: (_) => CreateOrEditOfferView(offer: offerToEdit)),
@@ -53,7 +50,6 @@ class _CompanyHomeViewState extends State<CompanyHomeView> {
   }
 
   void _navigateToApplications(BuildContext context, JobOffer offer) {
-     // ⚠️ TODO: Navegación a la vista de postulantes para una oferta
      // Navigator.of(context).push(
      //   MaterialPageRoute(builder: (_) => OfferApplicationsView(offerId: offer.id, offerTitle: offer.title)),
      // );
@@ -168,7 +164,6 @@ class CompanyOfferCard extends StatelessWidget {
   final JobOffer offer;
   final VoidCallback onViewApplications;
   final VoidCallback onEdit;
-  // ⚠️ Podrías añadir un VoidCallback onDelete;
 
   const CompanyOfferCard({
     required this.offer,
@@ -179,8 +174,6 @@ class CompanyOfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ⚠️ Se asume que el backend devuelve un conteo de postulantes en la oferta (offer.applicationsCount)
-    // Si no lo hace, este dato se obtendría en el OfferApplicationsView.
     final int applicantCount = offer.applicationsCount ?? 0;
 
     return Card(
@@ -203,14 +196,14 @@ class CompanyOfferCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   offer.description.length > 150 
-                  ? offer.description.substring(0, 150) + '...' 
+                  ? '${offer.description.substring(0, 150)}...' 
                   : offer.description,
                   style: const TextStyle(color: Colors.black87),
                 ),
               ],
             ),
           ),
-          ButtonBar(
+          OverflowBar(
             alignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
               TextButton.icon(

@@ -12,27 +12,35 @@ enum UserRole {
 }
 
 extension UserRoleExtension on UserRole {
-  // Este método devuelve el valor de string que NestJS espera
-  String toJson() {
-    switch (this) {
-      case UserRole.aspirante:
-        return 'ASPIRANTE';
-      case UserRole.empresa:
-        return 'EMPRESA';
-      case UserRole.admin:
-        return 'ADMIN';
-    }
-  }
+ // Este método devuelve el valor de string que NestJS espera
+ String toJson() {
+ switch (this) {
+ case UserRole.aspirante:
+ return 'ASPIRANTE';
+ case UserRole.empresa:
+return 'EMPRESA';
+case UserRole.admin:
+return 'ADMIN';
+ }
+ }
 }
 
 @JsonSerializable()
 class User {
-  final int id;
-  final String email;
-  final UserRole role;
+ final int id;
+ final String email;
+ final UserRole role;
+ 
+ //Agregar campo para el nombre de la empresa (opcional para otros roles)
+ final String? companyName; 
 
-  User({required this.id, required this.email, required this.role});
+ User({
+    required this.id, 
+    required this.email, 
+    required this.role, 
+    this.companyName // hacerlo opcional en el constructor
+  });
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+ factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+ Map<String, dynamic> toJson() => _$UserToJson(this);
 }

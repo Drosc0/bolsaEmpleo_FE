@@ -28,3 +28,4 @@ Map<String, dynamic> _$ApplicationToJson(Application instance) =>
       'jobOffer': instance.jobOffer.toJson(),
       'aspirantProfile': instance.aspirantProfile?.toJson(),
     };
+

@@ -14,7 +14,7 @@ AspirantProfile _$AspirantProfileFromJson(Map<String, dynamic> json) =>
       phone: json['phone'] as String?,
       summary: json['summary'] as String?,
       skills: (json['skills'] as List<dynamic>)
-          .map((e) => Skill.fromJson(e as Map<String, dynamic>))
+          .map((e) => SkillItem.fromJson(e as Map<String, dynamic>))
           .toList(),
       experience: (json['experience'] as List<dynamic>)
           .map((e) => ExperienceItem.fromJson(e as Map<String, dynamic>))
@@ -28,6 +28,6 @@ Map<String, dynamic> _$AspirantProfileToJson(AspirantProfile instance) =>
       'email': instance.email,
       'phone': instance.phone,
       'summary': instance.summary,
-      'skills': instance.skills,
-      'experience': instance.experience,
+      'skills': instance.skills.map((e) => e.toJson()).toList(),
+      'experience': instance.experience.map((e) => e.toJson()).toList(),
     };

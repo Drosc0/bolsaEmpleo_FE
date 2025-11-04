@@ -6,7 +6,40 @@ import 'api_client.dart'; // Importamos el cliente HTTP base
 class AuthService {
   final ApiService _api = ApiService();
 
-  // --- Login ---
+  // --- LÓGICA DE RECUPERACIÓN DE SESIÓN (NUEVO) ---
+  
+  /// Intenta obtener el token guardado y recuperar el objeto User.
+  Future<User?> getAuthenticatedUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwt_token');
+
+    if (token == null) {
+      return null; // No hay token, no hay usuario autenticado
+    }
+
+    try {
+      // 1. Necesitas una forma de que ApiService use el token para esta llamada.
+      // Asumimos que _api.getWithToken lo maneja o que /auth/me usa el token
+      // ya configurado en ApiService. Por simplicidad, llamaremos a un endpoint /auth/me
+      // que devuelve el objeto del usuario basado en el token del header.
+      
+      final response = await _api.get('/auth/me'); 
+      
+      // 2. Decodificar la respuesta y crear el objeto User
+      final data = json.decode(response.body);
+
+      return User.fromJson(data); 
+
+    } catch (e) {
+      // Si la llamada falla (ej: token expirado, error 401), limpiamos el token local
+      await prefs.remove('jwt_token');
+      // En un entorno de producción, podrías loggear este error.
+      return null;
+    }
+  }
+
+
+  // --- Login (Modificado para usar el nuevo método) ---
   Future<User> login(String email, String password) async {
     final response = await _api.post('/auth/login', {
       'email': email,
@@ -20,24 +53,30 @@ class AuthService {
       throw Exception('Login failed: Token not received.');
     }
 
+    // 1. Guardar el token
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('jwt_token', token);
+    
+    // 2. Intentar cargar el usuario (usando el nuevo token guardado)
+    final user = await getAuthenticatedUser();
 
-    // ⚠️ Nota: Necesario una función para decodificar el token JWT y obtener el User object.
-    // Esto es un placeholder; la implementación real requiere un paquete como 'jwt_decoder'.
-    return User(id: 1, email: email, role: UserRole.aspirante); 
+    if (user == null) {
+       // Esto puede ocurrir si el token es válido pero /auth/me falla por alguna razón
+       throw Exception('Login successful but failed to retrieve user data.');
+    }
+    return user; 
   }
 
-  // --- Registro ---
+  // --- Registro (Sin cambios) ---
   Future<void> register(String email, String password, UserRole role) async {
     await _api.post('/auth/register', {
       'email': email,
       'password': password,
-      'role': role.toJson(), // Usa el método toJson del enum Dart
+      'role': role.toJson(), 
     });
   }
 
-  // --- Logout ---
+  // --- Logout (Sin cambios) ---
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('jwt_token');

@@ -11,6 +11,7 @@ ExperienceItem _$ExperienceItemFromJson(Map<String, dynamic> json) =>
       id: (json['id'] as num).toInt(),
       title: json['title'] as String,
       company: json['company'] as String,
+      location: json['location'] as String?,
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: json['endDate'] == null
           ? null
@@ -23,6 +24,7 @@ Map<String, dynamic> _$ExperienceItemToJson(ExperienceItem instance) =>
       'id': instance.id,
       'title': instance.title,
       'company': instance.company,
+      'location': instance.location,
       'startDate': instance.startDate.toIso8601String(),
       'endDate': instance.endDate?.toIso8601String(),
       'description': instance.description,

@@ -1,14 +1,13 @@
 import 'dart:convert';
-
 import '../models/aspirant_profile.dart';
-import '../models/skill.dart';
+import '../models/skill_item.dart'; 
 import '../models/experience_item.dart';
 import 'api_client.dart';
 
 class ProfileService {
   final ApiService _api = ApiService();
 
-  // --- Perfil Base ---
+  // --- Perfil Base (Correcto) ---
   
   // Obtener el perfil completo del aspirante autenticado
   Future<AspirantProfile> getMyProfile() async {
@@ -19,7 +18,6 @@ class ProfileService {
 
   // Actualizar el perfil base (ej: summary, phone)
   Future<AspirantProfile> updateProfile(Map<String, dynamic> updateData) async {
-    // Nota: El backend de NestJS maneja si es POST (crear) o PUT (actualizar)
     final response = await _api.put('/aspirants/profile', updateData);
     final data = json.decode(response.body);
     return AspirantProfile.fromJson(data);
@@ -27,15 +25,15 @@ class ProfileService {
 
   // --- Habilidades ---
 
-  // Añadir una nueva habilidad
-  Future<Skill> addSkill(String name, String category, int level) async {
+  /// Añadir una nueva habilidad
+  Future<SkillItem> addSkill(String name, String category, String level) async {
     final response = await _api.post('/aspirants/skills', {
       'name': name,
       'category': category,
-      'level': level,
+      'level': level, // Se envía como String
     });
     final data = json.decode(response.body);
-    return Skill.fromJson(data);
+    return SkillItem.fromJson(data);
   }
 
   // Eliminar una habilidad
@@ -43,7 +41,7 @@ class ProfileService {
     await _api.delete('/aspirants/skills/$skillId');
   }
   
-  // --- Experiencia (Similar al manejo de Habilidades) ---
+  // --- Experiencia (Correcto) ---
   
   Future<ExperienceItem> addExperience(Map<String, dynamic> experienceData) async {
     final response = await _api.post('/aspirants/experience', experienceData);

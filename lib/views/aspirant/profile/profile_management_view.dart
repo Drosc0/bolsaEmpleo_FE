@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../viemodels/profile_view_model.dart';
+import '../../../viemodels/profile_viewmodel.dart';
 import '../../../models/aspirant_profile.dart'; // Para el modelo de datos
 
 class ProfileManagementView extends StatefulWidget {

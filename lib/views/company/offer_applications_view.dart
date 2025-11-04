@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viemodels/offer_applications_view_model.dart';
 import '../../models/application.dart';
-import '../../models/aspirant_profile.dart'; 
+import '../../models/aspirant_profile.dart';
+import '../../views/aspirant/aspirant_profile_details_view.dart'; 
 
 class OfferApplicationsView extends StatelessWidget {
   final int offerId;
@@ -44,12 +45,16 @@ class OfferApplicationsView extends StatelessWidget {
               itemCount: vm.applications.length,
               itemBuilder: (context, index) {
                 final application = vm.applications[index];
-                // ⚠️ Nota: El backend debe cargar el perfil del aspirante para que esto funcione.
                 final aspirantProfile = application.aspirantProfile; 
+                
+                // 🛑 CORRECCIÓN DE ERROR NULO: Omitir si no hay perfil.
+                if (aspirantProfile == null) {
+                  return const SizedBox.shrink(); 
+                }
                 
                 return ApplicantCard(
                   application: application,
-                  aspirantProfile: aspirantProfile,
+                  aspirantProfile: aspirantProfile, // Garantizamos que no es nulo aquí
                   onUpdateStatus: (newStatus) => _showStatusUpdateDialog(context, vm, application, newStatus),
                   onViewProfile: () => _viewApplicantProfile(context, aspirantProfile),
                 );
@@ -63,37 +68,27 @@ class OfferApplicationsView extends StatelessWidget {
 
   // --- Lógica de la Vista ---
 
+  // 1. Navega a la vista detallada del perfil (CV)
   void _viewApplicantProfile(BuildContext context, AspirantProfile profile) {
-    // ⚠️ Implementar: Mostrar un modal o navegar a una vista para ver 
-    // los detalles del CV (habilidades, experiencia, etc.) del aspirante
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(profile.name),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Email: ${profile.email}'),
-              Text('Resumen: ${profile.summary ?? 'N/A'}'),
-              // Aquí mostrarías la lista de profile.skills y profile.experience
-              const Text('\nDetalles del CV (Pendientes de implementar)'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cerrar')),
-        ],
+    // ✅ Navegación a la vista dedicada para el CV
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AspirantProfileDetailsView(profile: profile),
       ),
     );
   }
 
+  // 2. Muestra el diálogo de actualización de estado
   void _showStatusUpdateDialog(
     BuildContext context,
     OfferApplicationsViewModel vm,
     Application application,
     ApplicationStatus initialStatus,
   ) {
+    // 🛑 CORRECCIÓN DE ERROR NULO: Usamos el nombre seguro del aspirante
+    final aspirantProfile = application.aspirantProfile;
+    final applicantName = aspirantProfile?.name ?? 'Candidato Desconocido'; 
+      
     ApplicationStatus? selectedStatus = initialStatus;
     TextEditingController commentsController = TextEditingController(text: application.comments);
 
@@ -101,7 +96,7 @@ class OfferApplicationsView extends StatelessWidget {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text('Actualizar Estado de ${application.aspirantProfile.name}'),
+          title: Text('Actualizar Estado de $applicantName'),
           content: StatefulBuilder(
             builder: (context, setState) {
               return Column(
@@ -111,7 +106,7 @@ class OfferApplicationsView extends StatelessWidget {
                     decoration: const InputDecoration(labelText: 'Nuevo Estado'),
                     value: selectedStatus,
                     items: ApplicationStatus.values.map((status) {
-                      // Excluye estados que no debe establecer la empresa (ej: Retirada)
+                      // Excluye estados no aptos para ser cambiados por la empresa
                       if (status == ApplicationStatus.withdrawn || status == ApplicationStatus.pending) {
                           return null; 
                       }
@@ -147,7 +142,6 @@ class OfferApplicationsView extends StatelessWidget {
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             ElevatedButton(
-              child: const Text('Guardar'),
               onPressed: selectedStatus == null ? null : () async {
                 Navigator.of(dialogContext).pop();
                 
@@ -166,6 +160,7 @@ class OfferApplicationsView extends StatelessWidget {
                   );
                 }
               },
+              child: const Text('Guardar'),
             ),
           ],
         );
@@ -189,14 +184,15 @@ class ApplicantCard extends StatelessWidget {
     super.key,
   });
   
-  // Utiliza los métodos de color ya definidos en MyApplicationsView
   Color _getStatusColor(ApplicationStatus status) {
     switch (status) {
       case ApplicationStatus.accepted: return Colors.green;
       case ApplicationStatus.reviewed: return Colors.blue;
       case ApplicationStatus.rejected: return Colors.red;
-      default: return Colors.orange;
-    }
+      case ApplicationStatus.pending: return Colors.grey;
+      case ApplicationStatus.interview: return Colors.deepPurple;
+      case ApplicationStatus.withdrawn: return Colors.brown;
+      }
   }
 
   @override

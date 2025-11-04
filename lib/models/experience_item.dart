@@ -7,6 +7,7 @@ class ExperienceItem {
   final int id;
   final String title;
   final String company;
+  final String? location;
   
   // Usamos DateTime para las fechas, asumiendo que NestJS devuelve ISO 8601 strings
   final DateTime startDate;
@@ -17,6 +18,7 @@ class ExperienceItem {
     required this.id,
     required this.title,
     required this.company,
+    this.location,
     required this.startDate,
     this.endDate,
     this.description,

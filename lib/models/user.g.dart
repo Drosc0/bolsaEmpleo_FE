@@ -10,12 +10,14 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
   id: (json['id'] as num).toInt(),
   email: json['email'] as String,
   role: $enumDecode(_$UserRoleEnumMap, json['role']),
+  companyName: json['companyName'] as String?,
 );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
   'id': instance.id,
   'email': instance.email,
   'role': _$UserRoleEnumMap[instance.role]!,
+  'companyName': instance.companyName,
 };
 
 const _$UserRoleEnumMap = {

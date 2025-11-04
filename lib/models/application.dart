@@ -9,6 +9,8 @@ enum ApplicationStatus {
   pending,
   @JsonValue('REVISADA')
   reviewed,
+  @JsonValue('ENTREVISTA')
+  interview,
   @JsonValue('ACEPTADA')
   accepted,
   @JsonValue('RECHAZADA')
@@ -54,6 +56,7 @@ class Application {
 const _$ApplicationStatusEnumMap = {
   ApplicationStatus.pending: 'PENDIENTE',
   ApplicationStatus.reviewed: 'REVISADA',
+  ApplicationStatus.interview: 'ENTREVISTA',
   ApplicationStatus.accepted: 'ACEPTADA',
   ApplicationStatus.rejected: 'RECHAZADA',
   ApplicationStatus.withdrawn: 'RETIRADA',

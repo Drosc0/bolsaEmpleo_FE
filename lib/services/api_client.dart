@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
  //  Android: 'http://10.0.2.2:3001/api'
  // emulador de iOS/Desktop/Web: 'http://localhost:3001/api'
- static const String _baseUrl = 'http://10.0.2.2:3001/api'; 
+ static const String _baseUrl = 'http://localhost:3001/api'; 
 
 // --- Funciones auxiliares para obtener el token y headers ---
 

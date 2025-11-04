@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viemodels/my_applications_view_model.dart';
 import '../../models/application.dart';
-import '../../models/job_offer.dart'; // Necesario para acceder a los detalles de la oferta
+//import '../../models/job_offer.dart'; // para acceder a los detalles de la oferta
 
 class MyApplicationsView extends StatelessWidget {
   const MyApplicationsView({super.key});
@@ -68,8 +68,9 @@ class ApplicationCard extends StatelessWidget {
       case ApplicationStatus.withdrawn:
         return Colors.grey;
       case ApplicationStatus.pending:
-      default:
-        return Colors.orange;
+      return Colors.orange;
+      case ApplicationStatus.interview:
+        throw UnimplementedError();
     }
   }
 
@@ -85,8 +86,9 @@ class ApplicationCard extends StatelessWidget {
       case ApplicationStatus.withdrawn:
         return Icons.remove_circle;
       case ApplicationStatus.pending:
-      default:
-        return Icons.pending;
+      return Icons.pending;
+      case ApplicationStatus.interview:
+        throw UnimplementedError();
     }
   }
 
