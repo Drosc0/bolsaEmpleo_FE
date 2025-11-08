@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Importamos el ViewModel y el Estado
 import '../../../../application/applicant/profile/user_profile_view_model.dart'; 
+import 'experience_form_screen.dart'; 
 
 // -------------------------------------------------------------------
 // 1. PROVIDERS PARA LOS CONTROLADORES (Manejo de Dispose)
@@ -160,7 +160,7 @@ class UserProfileScreen extends ConsumerWidget {
             // Sección de Experiencia
             _ExperienceSection(
               experiences: profileState.profile!.experience,
-              profileNotifier: profileNotifier, // Pasamos el notifier
+              profileNotifier: profileNotifier,
             ),
           ],
         ),
@@ -178,7 +178,7 @@ class UserProfileScreen extends ConsumerWidget {
 }
 
 // -------------------------------------------------------------------
-// 3. WIDGET DE LA SECCIÓN DE EXPERIENCIA (Actualizado)
+// 3. WIDGET DE LA SECCIÓN DE EXPERIENCIA
 // -------------------------------------------------------------------
 
 class _ExperienceSection extends StatelessWidget {
@@ -186,6 +186,16 @@ class _ExperienceSection extends StatelessWidget {
   final UserProfileViewModel profileNotifier;
 
   const _ExperienceSection({required this.experiences, required this.profileNotifier});
+
+  // Función para abrir el modal de experiencia (Añadir/Editar)
+  void _openExperienceForm(BuildContext context, {Experience? experience}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => ExperienceFormScreen(experience: experience),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -201,12 +211,7 @@ class _ExperienceSection extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.add_circle_outline),
-              onPressed: () {
-                // TO-DO: Implementar navegación para añadir nueva experiencia (usaremos un modal)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('TO-DO: Abrir modal para Añadir Experiencia'))
-                );
-              },
+              onPressed: () => _openExperienceForm(context), // Llama al formulario sin objeto
             ),
           ],
         ),
@@ -224,22 +229,31 @@ class _ExperienceSection extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.edit, size: 20),
-                onPressed: () {
-                  // TO-DO: Implementar navegación para editar experiencia
-                },
+                onPressed: () => _openExperienceForm(context, experience: exp), // Llama al formulario con objeto
               ),
               IconButton(
                 icon: const Icon(Icons.delete, size: 20, color: Colors.red),
                 onPressed: () async {
-                  // Lógica de eliminación (ejemplo)
-                  await profileNotifier.deleteExperience(exp.id);
+                  // Mostrar confirmación antes de eliminar (Mejora UX)
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Confirmar Eliminación'),
+                      content: Text('¿Estás seguro de que quieres eliminar la experiencia "${exp.title}"?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+                        TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Eliminar', style: TextStyle(color: Colors.red))),
+                      ],
+                    ),
+                  ) ?? false;
+
+                  if (confirm) {
+                    await profileNotifier.deleteExperience(exp.id);
+                  }
                 },
               ),
             ],
           ),
-          onTap: () {
-            // Mostrar detalles o editar
-          },
         )),
       ],
     );
