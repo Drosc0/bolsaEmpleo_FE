@@ -59,7 +59,7 @@ class CompanyHomeScreen extends ConsumerWidget {
               HomeStatus.error => Center(
                 child: Text('Error al cargar: ${companyState.errorMessage ?? "Desconocido"}'),
               ),
-              HomeStatus.loaded => _CompanyOffersList(offers: companyState.data ?? []),
+              HomeStatus.loaded => _CompanyOffersList(offers: companyState.data),
             },
           ),
         ],

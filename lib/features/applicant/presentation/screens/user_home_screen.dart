@@ -133,9 +133,9 @@ class SuggestedOffersColumn extends ConsumerWidget {
                 child: Text('Error: ${userState.errorMessage}', textAlign: TextAlign.center),
               ),
               HomeStatus.loaded => ListView.builder(
-                itemCount: userState.data!.length,
+                itemCount: userState.data.length,
                 itemBuilder: (context, index) {
-                  final offer = userState.data![index];
+                  final offer = userState.data[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
