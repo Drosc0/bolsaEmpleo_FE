@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bolsa_empleo/infrastructure/services/base/api_service.dart'; 
+import 'package:bolsa_empleo/infrastructure/base/api_service.dart'; 
 import '../../../config/services/dio_provider.dart'; 
 
 // -------------------------------
