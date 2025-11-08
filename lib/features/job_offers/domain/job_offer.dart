@@ -7,6 +7,8 @@ class JobOffer {
   final int minSalary;
   final int maxSalary;
   final String description;
+  final String contractType; 
+  final DateTime postedDate;
 
   JobOffer({
     required this.id,
@@ -16,6 +18,8 @@ class JobOffer {
     required this.minSalary,
     required this.maxSalary,
     required this.description,
+    required this.contractType, 
+    required this.postedDate,
   });
 
   // Método de fábrica para crear una JobOffer desde un JSON (futura integración con NestJS)
@@ -28,6 +32,11 @@ class JobOffer {
       minSalary: json['minSalary'] as int,
       maxSalary: json['maxSalary'] as int,
       description: json['description'] as String,
+      
+      // Asignar valores del JSON
+      contractType: json['contractType'] as String, 
+      // Convertir el String del JSON a un objeto DateTime de Dart
+      postedDate: DateTime.parse(json['postedDate'] as String), 
     );
   }
 }
