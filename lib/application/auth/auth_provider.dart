@@ -47,8 +47,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     
     // Si encontramos un token válido
     if (_storedToken != null && _storedToken!.isNotEmpty) {
-       // Asume que también cargarías userId, etc.
-       final dummyAuthData = AuthResponse(token: _storedToken!, userId: '123'); 
+       // Asume que también carga userId, etc.
+       final dummyAuthData = AuthResponse(token: _storedToken!, userId: '123', role: ''); 
        state = state.copyWith(
          status: AuthStatus.authenticated, 
          authData: dummyAuthData
