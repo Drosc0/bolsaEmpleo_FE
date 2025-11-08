@@ -8,149 +8,106 @@ class RegisterScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. OBSERVAMOS EL ESTADO DEL VIEwMODEL
+    // 1. Instancias para manejar el texto de los campos
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    // 2. Observar el estado y el notificador
     final registerState = ref.watch(registerViewModelProvider);
-    // 2. ACCEDEMOS AL NOTIFIER (MÉTODOS)
     final registerNotifier = ref.read(registerViewModelProvider.notifier);
 
-    // Controladores de edición local para capturar el input
-    final _formKey = GlobalKey<FormState>();
-    final _nameController = TextEditingController();
-    final _emailController = TextEditingController();
-    final _passwordController = TextEditingController();
-
-    // 3. ESCUCHAMOS LOS CAMBIOS DE ESTADO PARA NAVEGAR Y MOSTRAR SNACKBAR
-    ref.listen<RegisterState>(registerViewModelProvider, (previous, current) {
-      // Navegación al registro exitoso
-      if (current.isRegistered && !previous!.isRegistered) {
-        // Mostrar mensaje de éxito y luego ir a la Home o Login
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Registro exitoso! Por favor, inicia sesión.')),
-        );
-        context.go('/login');
-      }
-
-      // Mostrar error
-      if (current.errorMessage != null && current.errorMessage != previous?.errorMessage) {
+    // 3. Escuchar los cambios de estado (para navegación y mensajes)
+    ref.listen<RegisterState>(registerViewModelProvider, (previous, next) {
+      // Manejar el Error
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fallo en el registro: ${current.errorMessage}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            content: Text(next.errorMessage!),
+            backgroundColor: Colors.red,
           ),
         );
+        // Opcional: limpiar el error después de mostrarlo si el ViewModel no lo hace
+        // registerNotifier.resetState(); 
+      }
+      
+      // Manejar el Éxito
+      if (next.isRegistered && next.isRegistered != previous?.isRegistered) {
+        // Mostrar mensaje de éxito
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Registro exitoso! Por favor, inicia sesión.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Navegar a la pantalla de Login y cerrar la pantalla actual
+        context.go('/login');
+        
+        // Es importante resetear el estado del ViewModel después de la navegación
+        registerNotifier.resetState(); 
       }
     });
 
-    // Función de manejo de registro
-    void _handleRegister() {
-      if (_formKey.currentState!.validate() && !registerState.isLoading) {
-        registerNotifier.register(
-          _emailController.text.trim(),
-          _passwordController.text,
-          _nameController.text.trim(),
-        );
-      }
-    }
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear Cuenta')),
-      body: Center(
+      appBar: AppBar(
+        title: const Text('Registro'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Regístrate como Aspirante',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Campo Nombre Completo
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nombre Completo',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.person),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, ingresa tu nombre.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Campo Email
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Correo Electrónico',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email),
-                    ),
-                    validator: (value) {
-                      if (value == null || !value.contains('@') || !value.contains('.')) {
-                        return 'Ingresa un email válido.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Campo Contraseña
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Contraseña',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.length < 6) {
-                        return 'La contraseña debe tener al menos 6 caracteres.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Botón de Registro
-                  ElevatedButton(
-                    // Deshabilitar si está cargando
-                    onPressed: registerState.isLoading ? null : _handleRegister,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: registerState.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Registrarse', style: TextStyle(fontSize: 18)),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Botón para ir al Login
-                  TextButton(
-                    onPressed: registerState.isLoading ? null : () => context.go('/login'),
-                    child: const Text('¿Ya tienes una cuenta? Inicia Sesión'),
-                  ),
-                ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Nombre Completo'),
               ),
-            ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Contraseña'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 32),
+              
+              ElevatedButton(
+                onPressed: registerState.isLoading
+                    ? null // Deshabilitar si está cargando
+                    : () {
+                        // Llamar al ViewModel
+                        registerNotifier.register(
+                          emailController.text,
+                          passwordController.text,
+                          nameController.text,
+                        );
+                      },
+                child: registerState.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Crear Cuenta'),
+              ),
+
+              const SizedBox(height: 20),
+              
+              TextButton(
+                onPressed: () {
+                  // Navegar a Login si el usuario ya tiene cuenta
+                  context.go('/login');
+                  registerNotifier.resetState(); // Limpiar el estado al salir
+                },
+                child: const Text('¿Ya tienes una cuenta? Inicia sesión'),
+              ),
+            ],
           ),
         ),
       ),

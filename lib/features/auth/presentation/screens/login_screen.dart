@@ -1,117 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../application/auth/login/login_view_model.dart'; 
+import '../../../../application/auth/login/login_view_model.dart'; // Importa el ViewModel
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
-   @override
-   Widget build(BuildContext context, WidgetRef ref) {
-      // 1. OBSERVAMOS EL ESTADO DEL VIEwMODEL (LoginState)
-      final loginState = ref.watch(loginViewModelProvider);
-      // 2. ACCEDEMOS AL NOTIFIER (MÉTODOS)
-      final loginNotifier = ref.read(loginViewModelProvider.notifier);
-  
-      // Controladores de edición local
-      // Nota: En un ConsumerWidget, estos se recrearán en cada rebuild, 
-      // pero para formularios simples es aceptable.
-      final emailController = TextEditingController(); 
-      final passwordController = TextEditingController();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Instancias para manejar el texto de los campos
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
 
-      // 3. ESCUCHAMOS LOS CAMBIOS DE ESTADO PARA NAVEGAR
-      ref.listen<LoginState>(loginViewModelProvider, (previous, current) {
-      // Si pasa a autenticado, navegamos a la Home
-      if (current.isAuthenticated) {
-        // Es crucial que el AuthProvider global actualice el estado de autenticación
-        // después de este punto, para que GoRouter no redirija de vuelta.
-       context.go('/'); 
+    // 2. Observar el estado y el notificador
+    final loginState = ref.watch(loginViewModelProvider);
+    final loginNotifier = ref.read(loginViewModelProvider.notifier);
+
+    // 3. Escuchar los cambios de estado (solo para mostrar errores)
+    ref.listen<LoginState>(loginViewModelProvider, (previous, next) {
+      // Manejar el Error
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        // Asegurarse de que el widget aún esté montado
+        if (context.mounted) { 
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(next.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
- 
-      // Si hay un mensaje de error, lo mostramos
-      if (current.errorMessage != null && current.errorMessage != previous?.errorMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-                      content: Text('Error: ${current.errorMessage}'),
-                      backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-        );
-      }
+      
+      // NOTA: No necesitamos manejar la navegación de éxito aquí.
+      // La navegación de éxito ocurre AUTOMÁTICAMENTE a través del app_router, 
+      // ya que el LoginNotifier actualiza el authProvider global.
     });
 
-    return Scaffold (
-      appBar: AppBar(title: const Text('Iniciar Sesión')),
-      body: Center(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Iniciar Sesión'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          //El Container aplica la restricción de ancho máximo (maxWidth: 400)
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400), 
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Bienvenido de Nuevo',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 50),
+              
+              TextFormField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 16),
+              
+              TextFormField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Contraseña'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 32),
+              
+              ElevatedButton(
+                onPressed: loginState.isLoading
+                    ? null // Deshabilitar si está cargando
+                    : () {
+                        // 4. Llamar al ViewModel para iniciar la autenticación
+                        loginNotifier.login(
+                          emailController.text,
+                          passwordController.text,
+                        );
+                      },
+                child: loginState.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Entrar'),
+              ),
 
-                // Campo Email
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Correo Electrónico',
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
-
-                // Campo Contraseña
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña',
-                    prefixIcon: Icon(Icons.lock),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Botón de Login
-                ElevatedButton(
-                  // Deshabilitar si isLoading es true
-                  onPressed: loginState.isLoading ? null : () {
-                    // Llamada al método del Notifier
-                    loginNotifier.login(
-                    emailController.text, 
-                    passwordController.text
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: loginState.isLoading 
-                  ? const SizedBox(
-                    height: 20, width: 20, 
-                    child: CircularProgressIndicator(strokeWidth: 2)
-                  )
-                  : const Text('Entrar', style: TextStyle(fontSize: 18)),
-                ),
-                const SizedBox(height: 16),
-    
-                // Botón para ir al Registro
-                TextButton(
-                  onPressed: () => context.go('/register'),
-                  child: const Text('¿No tienes cuenta? Regístrate'),
-                ),
-              ],
-            ),
+              const SizedBox(height: 20),
+              
+              TextButton(
+                onPressed: loginState.isLoading
+                    ? null
+                    : () {
+                        // Navegar a Registro
+                        context.go('/register');
+                        // Opcional: limpiar el estado del login al navegar fuera
+                        loginNotifier.resetState(); 
+                      },
+                child: const Text('¿No tienes cuenta? Regístrate aquí.'),
+              ),
+            ],
           ),
         ),
       ),

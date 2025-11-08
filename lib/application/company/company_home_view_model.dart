@@ -1,13 +1,12 @@
+import 'package:bolsa_empleo/application/auth/auth_provider.dart';
+import 'package:bolsa_empleo/application/common/home_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Importar la clase de estado genérica
-import '../common/home_state.dart'; 
-import '../../application/auth/auth_provider.dart'; 
+import '../../../domain/repositories/job_offers_repository.dart'; 
 
-// --------------------------------------------------------------------------
-// 1. Modelos
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// Modelos de Dominio (Revisados para coincidir con el Repositorio)
+// -------------------------------------------------------------------
 
-// Modelo de datos para las ofertas publicadas por la empresa
 class PostedJobOffer {
   final String id;
   final String title;
@@ -22,73 +21,58 @@ class PostedJobOffer {
   });
 }
 
-// --------------------------------------------------------------------------
-// 2. Estado Específico
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// Estado
+// -------------------------------------------------------------------
 
-// El estado de la vista de Empresa es una lista de PostedJobOffer
-class CompanyHomeState extends HomeState<List<PostedJobOffer>> {
+class CompanyHomeState {
+  // Ahora HomeStatus se usa, pero no se define aquí.
+  final HomeStatus status; 
+  final List<PostedJobOffer> data;
+  final String? errorMessage;
+
   CompanyHomeState({
-    super.status,
-    super.data,
-    super.errorMessage,
+    this.status = HomeStatus.initial,
+    this.data = const [],
+    this.errorMessage,
   });
 
-  // Sobreescribir copyWith para devolver el tipo correcto (CompanyHomeState)
-  @override
   CompanyHomeState copyWith({
     HomeStatus? status,
     List<PostedJobOffer>? data,
     String? errorMessage,
-  }) {
-    return CompanyHomeState(
-      status: status ?? this.status,
-      data: data ?? this.data,
-      errorMessage: errorMessage,
-    );
-  }
+  }) => CompanyHomeState(
+    status: status ?? this.status,
+    data: data ?? this.data,
+    errorMessage: errorMessage,
+  );
 }
 
-// --------------------------------------------------------------------------
-// 3. ViewModel (StateNotifier)
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// ViewModel
+// -------------------------------------------------------------------
 
 class CompanyHomeViewModel extends StateNotifier<CompanyHomeState> {
-  // final CompanyRepository _companyRepository;
-  // final String companyId; 
+  final JobOffersRepository _jobOffersRepository; 
+  final String _companyId;
 
-  CompanyHomeViewModel() : super(CompanyHomeState(data: []));
+  CompanyHomeViewModel(this._jobOffersRepository, this._companyId) 
+      : super(CompanyHomeState()); 
 
   Future<void> loadPostedOffers() async {
-    // 1. Cambiar el estado a cargando
-    state = state.copyWith(status: HomeStatus.loading);
-    
+    if (_companyId.isEmpty) {
+        state = state.copyWith(status: HomeStatus.error, errorMessage: 'ID de empresa no disponible.');
+        return;
+    }
+      
+    state = state.copyWith(status: HomeStatus.loading, errorMessage: null);
     try {
-      // **TO-DO: Reemplazar con la llamada real al CompanyRepository**
-      await Future.delayed(const Duration(seconds: 1));
-      
-      final mockPostedOffers = [
-        PostedJobOffer(
-          id: 'A1',
-          title: 'Full Stack Developer (NestJS/Flutter)',
-          totalApplications: 45,
-          newApplications: 5,
-        ),
-        PostedJobOffer(
-          id: 'B2',
-          title: 'Gerente de Marketing Digital',
-          totalApplications: 12,
-          newApplications: 1,
-        ),
-      ];
+      final realOffers = await _jobOffersRepository.fetchPostedOffers(_companyId);
 
-      // 2. Cambiar el estado a cargado con los datos
-      state = state.copyWith(status: HomeStatus.loaded, data: mockPostedOffers);
-      
+      state = state.copyWith(status: HomeStatus.loaded, data: realOffers);
     } catch (e) {
-      // 3. Cambiar el estado a error
       state = state.copyWith(
-        status: HomeStatus.error,
+        status: HomeStatus.error, 
         errorMessage: 'Error al cargar ofertas publicadas: ${e.toString()}',
         data: [],
       );
@@ -96,15 +80,23 @@ class CompanyHomeViewModel extends StateNotifier<CompanyHomeState> {
   }
 }
 
-// --------------------------------------------------------------------------
-// 4. Provider
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// Provider
+// -------------------------------------------------------------------
 
 final companyHomeViewModelProvider = 
     StateNotifierProvider<CompanyHomeViewModel, CompanyHomeState>((ref) {
-  // final authData = ref.watch(authProvider).authData;
-  // final companyRepo = ref.watch(companyRepositoryProvider);
-  // return CompanyHomeViewModel(companyRepo, authData!.userId);
   
-  return CompanyHomeViewModel();
+  final authData = ref.watch(authProvider).authData;
+  final jobRepo = ref.watch(jobOffersRepositoryProvider); 
+  
+  final companyId = authData?.userId ?? ''; 
+
+  final viewModel = CompanyHomeViewModel(jobRepo, companyId);
+  
+  if (companyId.isNotEmpty) {
+    viewModel.loadPostedOffers();
+  }
+
+  return viewModel;
 });

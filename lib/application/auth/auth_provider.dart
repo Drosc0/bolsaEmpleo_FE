@@ -1,68 +1,73 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../infrastructure/services/auth_api_service.dart';
-//import 'package:flutter_secure_storage/flutter_secure_storage.dart'; mas adelante
+import '../../config/services/secure_storage_service.dart'; 
 
-// 1. STATE: Estado global de Autenticación
+// ----------------------------------------------------------------------
+// 1. STATE y STATUS (Sin cambios)
+// ----------------------------------------------------------------------
 
 enum AuthStatus { checking, authenticated, unauthenticated }
 
 class AuthState {
   final AuthStatus status;
-  final AuthResponse? authData; // Contiene el token y userId
+  final AuthResponse? authData; // Contiene el token, userId y role
 
-  AuthState({
-    required this.status,
-    this.authData,
-  });
-
-  // Estado inicial: Revisando la sesión
+  AuthState({required this.status, this.authData});
+  
   factory AuthState.initial() => AuthState(status: AuthStatus.checking);
-
-  AuthState copyWith({
-    AuthStatus? status,
-    AuthResponse? authData,
-  }) {
+  
+  AuthState copyWith({AuthStatus? status, AuthResponse? authData}) {
+    // Permite pasar authData: null para desautenticar
     return AuthState(
       status: status ?? this.status,
-      authData: authData ?? this.authData,
+      authData: authData,
     );
   }
 }
 
-// 2. NOTIFIER: Lógica de la Sesión Global
+// ----------------------------------------------------------------------
+// 2. NOTIFIER: Lógica de la Sesión Global (MODIFICADO)
+// ----------------------------------------------------------------------
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  // Simulación de almacenamiento seguro (reemplazar con SecureStorage)
-  String? _storedToken; 
+  final SecureStorageService _storageService; 
 
-  AuthNotifier() : super(AuthState.initial()) {
+  AuthNotifier(this._storageService) : super(AuthState.initial()) {
     // Intentar cargar la sesión al inicio
     checkAuthStatus();
   }
 
-  // Verificar estado de autenticación (simulado)
+  // Verificar estado de autenticación al inicio de la app
   Future<void> checkAuthStatus() async {
-    // Simular lectura de storage (SecureStorage.read(key: 'token'))
-    await Future.delayed(const Duration(milliseconds: 500)); 
+    // 1. Leer los datos desde el Secure Storage
+    final token = await _storageService.readToken();
+    final userId = await _storageService.readUserId();
+    final role = await _storageService.readRole();
     
-    // Si encontramos un token válido
-    if (_storedToken != null && _storedToken!.isNotEmpty) {
-       // Asume que también carga userId, etc.
-       final dummyAuthData = AuthResponse(token: _storedToken!, userId: '123', role: ''); 
+    // Si encontramos un token, ID y rol válidos
+    if (token != null && userId != null && role != null) {
+       // 2. Reconstruir el AuthResponse
+       final savedAuthData = AuthResponse(token: token, userId: userId, role: role); 
+       
+       // 3. Establecer como autenticado
        state = state.copyWith(
          status: AuthStatus.authenticated, 
-         authData: dummyAuthData
+         authData: savedAuthData
        );
     } else {
+      // 4. Si falta cualquier dato, desautenticar
       state = state.copyWith(status: AuthStatus.unauthenticated, authData: null);
     }
   }
 
   // Método llamado después de un LOGIN exitoso
   void setAuthenticated(AuthResponse data) {
-    // 1. Guardar el token de forma persistente
-    _storedToken = data.token; 
-    // SecureStorage.write(key: 'token', value: data.token);
+    // 1. Guardar el token de forma persistente (Asíncrono, no bloqueante)
+    _storageService.setAuthData(
+      token: data.token, 
+      role: data.role, 
+      userId: data.userId
+    );
 
     // 2. Actualizar el estado global
     state = state.copyWith(
@@ -72,18 +77,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   // Método para cerrar sesión
-  void logout() {
-    // 1. Limpiar el token del storage
-    _storedToken = null;
-    // SecureStorage.delete(key: 'token');
+  Future<void> logout() async {
+    // 1. Limpiar el token del storage (Asíncrono)
+    await _storageService.deleteAuthData();
 
     // 2. Actualizar el estado global
-    state = AuthState.initial().copyWith(status: AuthStatus.unauthenticated);
+    // Usamos copyWith(authData: null) para asegurar que el token se borra
+    state = AuthState.initial().copyWith(status: AuthStatus.unauthenticated, authData: null);
   }
 }
 
-// 3. PROVIDER
+// ----------------------------------------------------------------------
+// 3. PROVIDER (MODIFICADO para inyectar el storage)
+// ----------------------------------------------------------------------
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  // 🆕 Leer e inyectar el servicio de storage
+  final storageService = ref.watch(secureStorageServiceProvider);
+  return AuthNotifier(storageService);
 });
