@@ -3,22 +3,37 @@ import 'package:bolsa_empleo/application/common/home_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/repositories/job_offers_repository.dart';
 
-// -------------------------------------------------------------------
-// Modelos de Dominio (Revisados para coincidir con el Repositorio)
-// -------------------------------------------------------------------
+// ------------------
+// Modelos de Dominio
+// ------------------
 
 class JobOffer {
   final String id;
   final String title;
   final String company;
   final String location;
+  final String contractType;
+  final int minSalary;
+  final int maxSalary;
+  final String description;
+  final DateTime postedDate;
 
-  JobOffer(this.id, this.title, this.company, this.location);
+  JobOffer({
+    required this.id,
+    required this.title,
+    required this.company,
+    required this.location,
+    required this.contractType,
+    required this.minSalary,
+    required this.maxSalary,
+    required this.description,
+    required this.postedDate,
+  });
 }
 
-// -------------------------------------------------------------------
-// Estado
-// -------------------------------------------------------------------
+// ---------------------
+// Estado (Sin cambios)
+// --------------------
 
 class UserHomeState {
   final HomeStatus status;
@@ -42,12 +57,12 @@ class UserHomeState {
   );
 }
 
-// -------------------------------------------------------------------
-// ViewModel
-// -------------------------------------------------------------------
+// ----------
+// ViewModel 
+// ----------
 
 class UserHomeViewModel extends StateNotifier<UserHomeState> {
-  // 🆕 Dependencias inyectadas
+  // Dependencias inyectadas
   final JobOffersRepository _jobOffersRepository; 
   final String _userId; 
 
@@ -63,7 +78,7 @@ class UserHomeViewModel extends StateNotifier<UserHomeState> {
       
     state = state.copyWith(status: HomeStatus.loading, errorMessage: null);
     try {
-      // 🚨 USO REAL DEL REPOSITORIO 🚨
+      // USO REAL DEL REPOSITORIO
       final realOffers = await _jobOffersRepository.fetchRecommendedOffers(_userId);
 
       state = state.copyWith(status: HomeStatus.loaded, data: realOffers);
@@ -77,9 +92,9 @@ class UserHomeViewModel extends StateNotifier<UserHomeState> {
   }
 }
 
-// -------------------------------------------------------------------
-// Provider
-// -------------------------------------------------------------------
+// ---------
+// Provider 
+// ---------
 
 final userHomeViewModelProvider = 
     StateNotifierProvider<UserHomeViewModel, UserHomeState>((ref) {
@@ -87,13 +102,10 @@ final userHomeViewModelProvider =
   final authData = ref.watch(authProvider).authData;
   final jobRepo = ref.watch(jobOffersRepositoryProvider); 
   
-  // Obtenemos el ID del usuario si está autenticado. Si no, usamos una cadena vacía.
   final userId = authData?.userId ?? ''; 
 
-  // El ViewModel gestionará si el ID es válido o no.
   final viewModel = UserHomeViewModel(jobRepo, userId);
   
-  // Opcional: Cargar ofertas automáticamente al inicializar el ViewModel
   if (userId.isNotEmpty) {
     viewModel.loadRecommendedOffers();
   }
