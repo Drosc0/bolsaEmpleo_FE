@@ -5,36 +5,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
+  // Asegura que los bindings de Flutter estén inicializados.
+  // crucial si el authProvider necesita leer datos guardados (tokens) al inicio.
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MainApp()));
 }
 
-// --- WIDGET PRINCIPAL ---
+// WIDGET PRINCIPAL
 class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Observa el estado del tema
+    // 1. Observa el estado del tema para aplicar el modo claro/oscuro.
     final themeMode = ref.watch(themeProvider);
 
-    // 2. Obtiene la configuración del router (GoRouter)
+    // 2. Observa la configuración del router (GoRouter).
+    // La lógica de redirección (si el usuario está logueado o no) debe estar
+    // implementada en el archivo app_router.dart.
     final appRouter = ref.watch(goRouterProvider);
 
     return MaterialApp.router(
       title: 'JobBoard Pro',
       debugShowCheckedModeBanner: false,
 
-      // --- APLICACIÓN DE TEMAS ---
-      // Tema Claro: Verde Primario, Naranja Secundario
+      // APLICACIÓN DE TEMAS
       theme: AppTheme.lightTheme, 
-      
-      // Tema Oscuro: Deep Blue Primario, Naranja Secundario
       darkTheme: AppTheme.darkTheme,
-      
-      // Controla qué tema usar basándose en el estado de Riverpod
       themeMode: themeMode, 
 
-      // --- NAVEGACIÓN ---
+      // NAVEGACIÓN
       routerConfig: appRouter,
     );
   }

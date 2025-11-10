@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../infrastructure/services/auth_api_service.dart';
-import '../../config/services/secure_storage_service.dart'; 
+import '../../config/services/secure_storage_service.dart';
+import '../../infrastructure/models/auth_response.dart'; 
 
 // ----------------------------------------------------------------------
-// 1. STATE y STATUS (Sin cambios)
+// 1. STATE y STATUS
 // ----------------------------------------------------------------------
 
 enum AuthStatus { checking, authenticated, unauthenticated }
@@ -20,19 +21,21 @@ class AuthState {
     // Permite pasar authData: null para desautenticar
     return AuthState(
       status: status ?? this.status,
-      authData: authData,
+      // Si status es unauthenticated, forzamos authData a ser null
+      authData: status == AuthStatus.unauthenticated ? null : authData ?? this.authData,
     );
   }
 }
 
 // ----------------------------------------------------------------------
-// 2. NOTIFIER: Lógica de la Sesión Global (MODIFICADO)
+// 2. NOTIFIER: Lógica de la Sesión Global
 // ----------------------------------------------------------------------
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final SecureStorageService _storageService; 
+  final AuthApiService _authService; 
 
-  AuthNotifier(this._storageService) : super(AuthState.initial()) {
+  AuthNotifier(this._storageService, this._authService) : super(AuthState.initial()) {
     // Intentar cargar la sesión al inicio
     checkAuthStatus();
   }
@@ -44,25 +47,72 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final userId = await _storageService.readUserId();
     final role = await _storageService.readRole();
     
-    // Si encontramos un token, ID y rol válidos
     if (token != null && userId != null && role != null) {
-       // 2. Reconstruir el AuthResponse
-       final savedAuthData = AuthResponse(token: token, userId: userId, role: role); 
-       
-       // 3. Establecer como autenticado
-       state = state.copyWith(
-         status: AuthStatus.authenticated, 
-         authData: savedAuthData
-       );
+        // 2. Reconstruir el AuthResponse
+        final savedAuthData = AuthResponse(token: token, userId: userId, role: role); 
+        
+        // 3. Establecer como autenticado
+        state = state.copyWith(
+            status: AuthStatus.authenticated, 
+            authData: savedAuthData
+        );
     } else {
       // 4. Si falta cualquier dato, desautenticar
       state = state.copyWith(status: AuthStatus.unauthenticated, authData: null);
     }
   }
 
-  // Método llamado después de un LOGIN exitoso
+  // ------------------------------------
+  // MÉTODOS DE AUTENTICACIÓN
+  // ------------------------------------
+
+  // Manejo de Registro
+  Future<bool> registerUser({
+    required String email,
+    required String password,
+    required String userType, // 'applicant' o 'company'
+  }) async {
+    try {
+      state = state.copyWith(status: AuthStatus.checking);
+      
+      final authResponse = await _authService.register(
+        email: email,
+        password: password,
+        userType: userType, 
+      );
+      
+      // Si el backend devuelve AuthResponse (registro exitoso)
+      setAuthenticated(authResponse);
+      return true;
+    } catch (e) {
+      // Manejo de excepción
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      return false;
+    }
+  }
+
+  // Manejo de Login
+  Future<bool> loginUser({required String email, required String password}) async {
+    try {
+      state = state.copyWith(status: AuthStatus.checking);
+      
+      // NOTA: Usamos el método que acepta email/password si _authService lo soporta, 
+      // o ajustamos si _authService espera un DTO. (Mantengo la firma que usaste en la vista)
+      final authResponse = await _authService.login(email: email, password: password);
+      
+      setAuthenticated(authResponse);
+      return true;
+    } catch (e) {
+      // Manejo de excepción
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      return false;
+    }
+  }
+
+
+  // Método llamado después de un LOGIN o REGISTER exitoso
   void setAuthenticated(AuthResponse data) {
-    // 1. Guardar el token de forma persistente (Asíncrono, no bloqueante)
+    // 1. Guardar los datos de forma persistente (Asíncrono)
     _storageService.setAuthData(
       token: data.token, 
       role: data.role, 
@@ -82,17 +132,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _storageService.deleteAuthData();
 
     // 2. Actualizar el estado global
-    // Usamos copyWith(authData: null) para asegurar que el token se borra
-    state = AuthState.initial().copyWith(status: AuthStatus.unauthenticated, authData: null);
+    state = state.copyWith(status: AuthStatus.unauthenticated, authData: null);
   }
 }
 
 // ----------------------------------------------------------------------
-// 3. PROVIDER (MODIFICADO para inyectar el storage)
+// 3. PROVIDER (Inyección de dependencias)
 // ----------------------------------------------------------------------
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  // 🆕 Leer e inyectar el servicio de storage
+  // 1. Obtener dependencias
   final storageService = ref.watch(secureStorageServiceProvider);
-  return AuthNotifier(storageService);
+  final apiService = ref.watch(authApiServiceProvider); 
+  
+  // 2. Crear el Notifier
+  return AuthNotifier(storageService, apiService);
 });

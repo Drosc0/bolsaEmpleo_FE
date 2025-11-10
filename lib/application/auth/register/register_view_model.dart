@@ -1,99 +1,111 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../infrastructure/services/auth_api_service.dart'; 
+import 'package:bolsa_empleo/application/auth/auth_provider.dart';
 
-// ----------------------------------------------------------------------
-// 1. STATE: Estado del Registro
-// ----------------------------------------------------------------------
+// -------------------------------------------------------------------
+// TIPOS Y ESTADO
+// -------------------------------------------------------------------
 
-class RegisterState {
+// Usamos estos strings para mapear con la lógica del backend
+const String userTypeApplicant = 'applicant';
+const String userTypeCompany = 'company';
+
+class RegisterFormState {
+  final String email;
+  final String password;
+  final String userType; // 'applicant' o 'company'
   final bool isLoading;
   final String? errorMessage;
-  final bool isRegistered;
 
-  RegisterState({
+  RegisterFormState({
+    this.email = '',
+    this.password = '',
+    this.userType = userTypeApplicant, // Valor por defecto
     this.isLoading = false,
     this.errorMessage,
-    this.isRegistered = false,
   });
 
-  RegisterState copyWith({
+  RegisterFormState copyWith({
+    String? email,
+    String? password,
+    String? userType,
     bool? isLoading,
     String? errorMessage,
-    bool? isRegistered,
-  }) {
-    return RegisterState(
-      isLoading: isLoading ?? this.isLoading,
-      // Usamos 'errorMessage: errorMessage' sin el operador ?? para permitir limpiar el error
-      errorMessage: errorMessage, 
-      isRegistered: isRegistered ?? this.isRegistered,
-    );
-  }
+  }) => RegisterFormState(
+    email: email ?? this.email,
+    password: password ?? this.password,
+    userType: userType ?? this.userType,
+    isLoading: isLoading ?? this.isLoading,
+    errorMessage: errorMessage,
+  );
 }
 
-// ----------------------------------------------------------------------
-// 2. VIEwMODEL/NOTIFIER: Lógica de Negocio
-// ----------------------------------------------------------------------
+// -------------------------------------------------------------------
+// NOTIFIER
+// -------------------------------------------------------------------
 
-class RegisterNotifier extends StateNotifier<RegisterState> {
-  final AuthApiService _authService;
+class RegisterViewModel extends StateNotifier<RegisterFormState> {
+  final AuthNotifier authNotifier;
 
-  RegisterNotifier(this._authService) : super(RegisterState());
+  RegisterViewModel(this.authNotifier) : super(RegisterFormState());
 
-  Future<void> register(String email, String password, String name) async {
-    // Validación básica de campos
-    if (email.isEmpty || password.isEmpty || name.isEmpty) {
-      state = state.copyWith(
-        errorMessage: 'Todos los campos son obligatorios.',
-      );
-      return;
+  void onEmailChange(String value) {
+    state = state.copyWith(email: value, errorMessage: null);
+  }
+
+  void onPasswordChange(String value) {
+    state = state.copyWith(password: value, errorMessage: null);
+  }
+  
+  void onUserTypeChange(String value) {
+    // Aseguramos que solo sean los valores permitidos
+    if (value == userTypeApplicant || value == userTypeCompany) {
+      state = state.copyWith(userType: value, errorMessage: null);
+    }
+  }
+
+  // Método de REGISTRO: llama al AuthNotifier con los datos del estado
+  Future<bool> register() async {
+    if (state.email.isEmpty || state.password.isEmpty) {
+      state = state.copyWith(errorMessage: 'Rellena todos los campos.');
+      return false;
+    }
+    
+    // Validación mínima de contraseña
+    if (state.password.length < 6) {
+      state = state.copyWith(errorMessage: 'La contraseña debe tener al menos 6 caracteres.');
+      return false;
     }
 
-    // 1. Iniciar carga y limpiar errores previos
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    final dto = RegisterDto(email: email, password: password, name: name);
-
     try {
-      // 2. Llamada al servicio de API
-      final success = await _authService.register(dto);
+      final success = await authNotifier.registerUser(
+        email: state.email,
+        password: state.password,
+        userType: state.userType, // Enviamos el rol seleccionado
+      );
 
-      if (success) {
-        // 3. Éxito
+      if (!success) {
         state = state.copyWith(
           isLoading: false,
-          isRegistered: true,
-          errorMessage: null,
-        );
-      } else {
-        // Fallo inesperado del servicio
-        state = state.copyWith(
-          isLoading: false,
-          isRegistered: false,
-          errorMessage: 'El registro falló por una razón desconocida.',
+          errorMessage: 'Error al registrar. El correo podría ya estar en uso.',
         );
       }
-    } on Exception catch (e) {
-      // 4. Fallo: Capturar excepción (ej. error 400 de NestJS)
+      // Si es exitoso, el AuthNotifier cambia el estado global y GoRouter redirige.
+      return success;
+    } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        isRegistered: false,
-        errorMessage: e.toString().replaceFirst('Exception: ', ''), 
+        errorMessage: e.toString().contains('Exception:') 
+            ? e.toString().replaceFirst('Exception: ', '') 
+            : 'Error desconocido durante el registro.',
       );
+      return false;
     }
-  }
-
-  // 🚨 MÉTODO CORREGIDO: Usado para limpiar el estado después de la navegación
-  void resetState() {
-    state = RegisterState();
   }
 }
 
-// ----------------------------------------------------------------------
-// 3. PROVIDER: Inyectar el Notifier
-// ----------------------------------------------------------------------
-
-final registerViewModelProvider = StateNotifierProvider.autoDispose<RegisterNotifier, RegisterState>((ref) {
-  // Inyectar el servicio de autenticación
-  final authService = ref.watch(authApiServiceProvider); 
-  return RegisterNotifier(authService);
+final registerViewModelProvider = StateNotifierProvider<RegisterViewModel, RegisterFormState>((ref) {
+  final authNotifier = ref.watch(authProvider.notifier);
+  return RegisterViewModel(authNotifier);
 });

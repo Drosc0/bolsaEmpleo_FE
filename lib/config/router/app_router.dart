@@ -5,27 +5,25 @@ import '../../application/auth/auth_provider.dart'; // Importa AuthProvider
 
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
-import '../../features/home/presentation/screens/home_screen.dart'; // Usado como splash/default
+import '../../features/home/presentation/screens/home_screen.dart'; // Pantalla principal pública
 import '../../features/job_offers/presentation/screens/job_offers_list_screen.dart';
 import '../../features/company/presentation/screens/company_home_screen.dart'; // Pantalla de Empresa
 import '../../features/applicant/presentation/screens/user_home_screen.dart'; // Pantalla de Aspirante
 
-// Rutas Públicas (accesibles sin login)
-final publicRoutes = [
+// Rutas que solo contienen formularios de acceso (si estás logueado, serás redirigido fuera de ellas)
+final publicAuthRoutes = [
   '/login', 
   '/register'
 ];
-// Rutas Protegidas (requieren autenticación)
-final protectedRoutes = [
-  '/', 
-  '/offers', 
-  '/offers/:id',
+
+// Rutas que SÍ O SÍ requieren un usuario autenticado para acceder (Dashboards específicos)
+final authRequiredRoutes = [
   '/applicant',
   '/company',
 ];
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  // 1. Observar el estado de autenticación
+  // 1. Observar el estado de autenticación (AuthStatus y AuthData)
   final authState = ref.watch(authProvider);
 
   return GoRouter(
@@ -35,47 +33,53 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     redirect: (BuildContext context, GoRouterState state) {
       final isGoingTo = state.matchedLocation;
       final authStatus = authState.status;
+      final userRole = authState.authData?.role;
       
-      // Caso A: Revisando la sesión
+      // Caso A: Revisando la sesión (Muestra la pantalla actual, generalmente el SplashScreen o el Home)
       if (authStatus == AuthStatus.checking) return null; 
 
-      // Caso B: No Autenticado
+      // Caso B: NO AUTENTICADO
       if (authStatus == AuthStatus.unauthenticated) {
-        // Si intenta ir a una ruta protegida (ej: /offers o /), lo mandamos a login
-        if (protectedRoutes.any((route) => isGoingTo.startsWith(route))) {
+        // Si intenta ir a una ruta que requiere autenticación (Ej: /applicant o /company), lo enviamos a login
+        if (authRequiredRoutes.contains(isGoingTo)) {
           return '/login';
         }
-        // Si ya está en /login o /register, permitimos el acceso
-        return null; 
+        // Si va a /, /offers, /login, /register, permitimos el acceso (null)
+        return null;
       }
 
-      // Caso C: Autenticado
+      // Caso C: AUTENTICADO
       if (authStatus == AuthStatus.authenticated) {
-        final userRole = authState.authData?.role; 
         
-        // Si está logeado y trata de ir a /login o /register, lo enviamos a su dashboard.
-        if (publicRoutes.contains(isGoingTo)) {
+        // 1. Redirección inversa: Si intenta ir a Login/Register, lo enviamos a su dashboard
+        if (publicAuthRoutes.contains(isGoingTo)) {
             if (userRole == 'company') return '/company';
             if (userRole == 'applicant') return '/applicant';
-            return '/'; // Default
+            // En caso de rol indefinido, lo enviamos al Home Público.
+            return '/'; 
         }
-        
-        // Si intenta ir a la ruta principal '/', lo dirigimos a su dashboard específico.
-        if (isGoingTo == '/') {
-            if (userRole == 'company') return '/company';
-            if (userRole == 'applicant') return '/applicant';
+
+        // 2. Restricción de Rol: Evitar que accedan al dashboard incorrecto
+        if (isGoingTo.startsWith('/company') && userRole == 'applicant') {
+          return '/applicant'; 
         }
+        if (isGoingTo.startsWith('/applicant') && userRole == 'company') {
+          return '/company'; 
+        }
+
+        // 3. Permitir el resto (incluyendo el Home Público '/' y sus dashboards específicos)
+        return null;
       }
       
       return null;
     },
     
     routes: [
-      // Rutas de Acceso General
+      // RUTAS PÚBLICAS (Accesibles por todos)
       GoRoute(
         path: '/',
         name: 'home',
-        builder: (context, state) => const HomeScreen(), // Usado como pantalla de carga o default
+        builder: (context, state) => const HomeScreen(), 
       ),
       GoRoute(
         path: '/login',
@@ -87,29 +91,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'register',
         builder: (context, state) => const RegisterScreen(),
       ),
-      
-      // Rutas por Rol
-      GoRoute(
-        path: '/applicant', // Home del aspirante
-        name: 'applicant_home',
-        builder: (context, state) => const UserHomeScreen(),
-      ),
-      GoRoute(
-        path: '/company', // Home de la empresa
-        name: 'company_home',
-        builder: (context, state) => const CompanyHomeScreen(),
-      ),
-
-      // Rutas de Ofertas (Comunes, pero protegidas)
       GoRoute(
         path: '/offers',
         name: 'offers_list',
-        builder: (context, state) => const JobOffersListScreen(),
+        builder: (context, state) => const JobOffersListScreen(), // Lista de ofertas pública
       ),
       GoRoute(
         path: '/offers/:id',
         name: 'offer_detail',
         builder: (context, state) => Text('Detalle de oferta: ${state.pathParameters['id']!}'), 
+      ),
+      
+      // RUTAS PROTEGIDAS Y ESPECÍFICAS DE ROL
+      GoRoute(
+        path: '/applicant', 
+        name: 'applicant_home',
+        builder: (context, state) => const UserHomeScreen(),
+      ),
+      GoRoute(
+        path: '/company', 
+        name: 'company_home',
+        builder: (context, state) => const CompanyHomeScreen(),
       ),
     ],
   );

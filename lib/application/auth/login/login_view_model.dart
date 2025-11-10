@@ -1,93 +1,95 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Importamos el servicio de autenticación para los métodos de API y DTOs
-import '../../../infrastructure/services/auth_api_service.dart'; 
-// Importamos el proveedor de autenticación global para actualizar la sesión
-import '../auth_provider.dart'; 
+import 'package:bolsa_empleo/application/auth/auth_provider.dart';
 
-// ----------------------------------------------------------------------
-// 1. STATE: Estado del Login
-// ----------------------------------------------------------------------
-
-class LoginState {
+// Definición del estado del formulario de Login
+class LoginFormState {
+  final String email;
+  final String password;
   final bool isLoading;
   final String? errorMessage;
 
-  LoginState({
+  LoginFormState({
+    this.email = '',
+    this.password = '',
     this.isLoading = false,
     this.errorMessage,
   });
 
-  LoginState copyWith({
+  LoginFormState copyWith({
+    String? email,
+    String? password,
     bool? isLoading,
     String? errorMessage,
-  }) {
-    return LoginState(
-      isLoading: isLoading ?? this.isLoading,
-      // Usamos 'errorMessage: errorMessage' para permitir limpiar el error
-      errorMessage: errorMessage, 
-    );
-  }
+  }) => LoginFormState(
+    email: email ?? this.email,
+    password: password ?? this.password,
+    isLoading: isLoading ?? this.isLoading,
+    errorMessage: errorMessage,
+  );
 }
 
-// ----------------------------------------------------------------------
-// 2. VIEwMODEL/NOTIFIER: Lógica de Negocio
-// ----------------------------------------------------------------------
+// Notifier para la lógica del formulario de Login
+class LoginViewModel extends StateNotifier<LoginFormState> {
+  final AuthNotifier authNotifier;
 
-class LoginNotifier extends StateNotifier<LoginState> {
-  final AuthApiService _authService;
-  // Inyectamos el AuthNotifier para actualizar el estado de la sesión global
-  final AuthNotifier _authNotifier; 
+  LoginViewModel(this.authNotifier) : super(LoginFormState());
 
-  LoginNotifier(this._authService, this._authNotifier) : super(LoginState());
+  void onEmailChange(String value) {
+    state = state.copyWith(email: value, errorMessage: null);
+  }
 
-  Future<void> login(String email, String password) async {
-    // 1. Validación básica de campos
-    if (email.isEmpty || password.isEmpty) {
-      state = state.copyWith(
-        errorMessage: 'El email y la contraseña son obligatorios.',
-      );
-      return;
+  void onPasswordChange(String value) {
+    state = state.copyWith(password: value, errorMessage: null);
+  }
+
+  // para limpiar el estado del formulario.
+  void resetState() {
+    state = LoginFormState();
+  }
+  
+  // para limpiar el error después de mostrar el SnackBar.
+  void clearError() {
+    if (state.errorMessage != null) {
+      state = state.copyWith(errorMessage: null);
+    }
+  }
+
+  // Método de LOGIN: llama al AuthNotifier con los datos del estado
+  Future<bool> login() async {
+    if (state.email.isEmpty || state.password.isEmpty) {
+      state = state.copyWith(errorMessage: 'Rellena todos los campos.');
+      return false;
     }
 
-    // 2. Iniciar carga y limpiar errores previos
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    final dto = LoginDto(email: email, password: password);
-
     try {
-      // 3. Llamada al servicio de API
-      final authResponse = await _authService.login(dto);
+      final success = await authNotifier.loginUser(
+        email: state.email,
+        password: state.password,
+      );
 
-      // 4. Éxito: Notificar al proveedor de autenticación global
-      _authNotifier.setAuthenticated(authResponse);
-
-      // 5. Finalizar carga
-      state = state.copyWith(isLoading: false);
-
-    } on Exception catch (e) {
-      // 6. Fallo: Capturar excepción y establecer mensaje de error
+      if (!success) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Credenciales incorrectas o error en el servidor.',
+        );
+      }
+      // Si es exitoso, el AuthNotifier cambia el estado global y GoRouter redirige.
+      return success;
+    } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString().replaceFirst('Exception: ', ''), 
+        errorMessage: e.toString().contains('Exception:') 
+            ? e.toString().replaceFirst('Exception: ', '') 
+            : 'Error desconocido durante el inicio de sesión.',
       );
+      return false;
     }
-  }
-
-  // Método opcional para limpiar el estado si el usuario cancela la operación
-  void resetState() {
-    state = LoginState();
   }
 }
 
-// ----------------------------------------------------------------------
-// 3. PROVIDER: Inyectar el Notifier
-// ----------------------------------------------------------------------
-
-final loginViewModelProvider = StateNotifierProvider.autoDispose<LoginNotifier, LoginState>((ref) {
-  // Inyectar el servicio de autenticación
-  final authService = ref.watch(authApiServiceProvider); 
-  // Inyectar el Notifier global de autenticación
+final loginViewModelProvider = StateNotifierProvider<LoginViewModel, LoginFormState>((ref) {
   final authNotifier = ref.watch(authProvider.notifier);
-  
-  return LoginNotifier(authService, authNotifier);
+  return LoginViewModel(authNotifier);
 });

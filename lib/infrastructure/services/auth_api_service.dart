@@ -1,3 +1,4 @@
+import 'package:bolsa_empleo/infrastructure/models/auth_response.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bolsa_empleo/infrastructure/base/api_service.dart'; 
@@ -21,48 +22,31 @@ class LoginDto {
 class RegisterDto {
   final String email;
   final String password;
-  final String name;
+  final String userType;
 
   RegisterDto({
     required this.email,
     required this.password,
-    required this.name,
+    required this.userType,
   });
 
   Map<String, dynamic> toJson() => {
     'email': email,
     'password': password,
-    'name': name,
+    'userType': userType,
   };
 }
 
-// ---------------------------------------
-// 2. Modelo de Respuesta de Autenticación
-// ---------------------------------------
-
-class AuthResponse {
-  final String token;
-  final String userId;
-  final String role; // CLAVE: Determina si es 'applicant' o 'company'
-  
-  AuthResponse({required this.token, required this.userId, required this.role});
-
-  factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-    token: json['access_token'] ?? '', 
-    userId: json['user_id'] ?? '', 
-    role: json['role'] ?? 'applicant', // Asegurar un rol por defecto si falta
-  );
-}
-
 // --------------------------------------------
-// 3. AuthApiService (Implementación de la API)
+// 2. AuthApiService (Implementación de la API)
 // --------------------------------------------
 
 class AuthApiService extends ApiService { 
   AuthApiService(super.dio);
 
   // Método de LOGIN
-  Future<AuthResponse> login(LoginDto dto) async {
+  Future<AuthResponse> login({required String email, required String password}) async {
+    final dto = LoginDto(email: email, password: password);
     try {
       final response = await dio.post('/auth/login', data: dto.toJson());
 
@@ -82,12 +66,23 @@ class AuthApiService extends ApiService {
     }
   }
 
-  // Método de REGISTRO
-  Future<bool> register(RegisterDto dto) async {
+  // Método de REGISTRO (Ahora devuelve AuthResponse en lugar de bool)
+  Future<AuthResponse> register({
+    required String email, 
+    required String password, 
+    required String userType
+  }) async {
+    final dto = RegisterDto(email: email, password: password, userType: userType);
     try {
-      final response = await dio.post('/auth/register', data: dto.toJson());
-      if (response.statusCode == 201) return true;
-      return false;
+      // El endpoint de registro debe devolver el AuthResponse (token, id, rol)
+      final response = await dio.post('/auth/register', data: dto.toJson()); 
+      
+      if (response.statusCode == 201) {
+        // Asumimos que el backend devuelve los datos de sesión tras el registro
+        final authResponse = AuthResponse.fromJson(response.data);
+        return authResponse;
+      }
+      throw Exception('Registro fallido o respuesta incompleta del servidor.');
     } on DioException catch (e) {
       String errorMessage = 'Error desconocido al registrar.';
       if (e.response != null && e.response!.data is Map) {
@@ -100,7 +95,7 @@ class AuthApiService extends ApiService {
 }
 
 // -----------
-// 4. Provider
+// 3. Provider
 // -----------
 
 final authApiServiceProvider = Provider((ref) {

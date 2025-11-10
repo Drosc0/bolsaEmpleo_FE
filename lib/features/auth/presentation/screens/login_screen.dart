@@ -1,26 +1,23 @@
+import 'package:bolsa_empleo/application/auth/login/login_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../application/auth/login/login_view_model.dart'; // Importa el ViewModel
+
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Instancias para manejar el texto de los campos
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-
-    // 2. Observar el estado y el notificador
+    // 1. Observar el estado y el notificador
+    // Usamos .select para evitar rebuilds innecesarios en todo el widget.
     final loginState = ref.watch(loginViewModelProvider);
     final loginNotifier = ref.read(loginViewModelProvider.notifier);
 
-    // 3. Escuchar los cambios de estado (solo para mostrar errores)
-    ref.listen<LoginState>(loginViewModelProvider, (previous, next) {
+    // 2. Escuchar los cambios de estado (solo para mostrar errores)
+    ref.listen<LoginFormState>(loginViewModelProvider, (previous, next) {
       // Manejar el Error
       if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
-        // Asegurarse de que el widget aún esté montado
         if (context.mounted) { 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -28,12 +25,10 @@ class LoginScreen extends ConsumerWidget {
               backgroundColor: Colors.red,
             ),
           );
+          // Opcional: Limpiar el error después de mostrarlo para evitar que se muestre de nuevo.
+          loginNotifier.clearError();
         }
       }
-      
-      // NOTA: No necesitamos manejar la navegación de éxito aquí.
-      // La navegación de éxito ocurre AUTOMÁTICAMENTE a través del app_router, 
-      // ya que el LoginNotifier actualiza el authProvider global.
     });
 
     return Scaffold(
@@ -50,14 +45,18 @@ class LoginScreen extends ConsumerWidget {
               const SizedBox(height: 50),
               
               TextFormField(
-                controller: emailController,
+                // 🚨 CORRECCIÓN 2: Usamos onChanged para actualizar el estado del ViewModel
+                onChanged: loginNotifier.onEmailChange,
+                initialValue: loginState.email, // Mantiene el valor en caso de rebuild
                 decoration: const InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
               
               TextFormField(
-                controller: passwordController,
+                // 🚨 CORRECCIÓN 2: Usamos onChanged para actualizar el estado del ViewModel
+                onChanged: loginNotifier.onPasswordChange,
+                initialValue: loginState.password, // Mantiene el valor en caso de rebuild
                 decoration: const InputDecoration(labelText: 'Contraseña'),
                 obscureText: true,
               ),
@@ -67,11 +66,8 @@ class LoginScreen extends ConsumerWidget {
                 onPressed: loginState.isLoading
                     ? null // Deshabilitar si está cargando
                     : () {
-                        // 4. Llamar al ViewModel para iniciar la autenticación
-                        loginNotifier.login(
-                          emailController.text,
-                          passwordController.text,
-                        );
+                        // El ViewModel ya tiene los datos por los onChanged.
+                        loginNotifier.login();
                       },
                 child: loginState.isLoading
                     ? const SizedBox(
@@ -88,9 +84,8 @@ class LoginScreen extends ConsumerWidget {
                 onPressed: loginState.isLoading
                     ? null
                     : () {
-                        // Navegar a Registro
                         context.go('/register');
-                        // Opcional: limpiar el estado del login al navegar fuera
+                        // Limpiamos el estado al navegar para empezar de cero
                         loginNotifier.resetState(); 
                       },
                 child: const Text('¿No tienes cuenta? Regístrate aquí.'),
