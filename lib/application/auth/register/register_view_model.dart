@@ -35,7 +35,8 @@ class RegisterFormState {
     password: password ?? this.password,
     userType: userType ?? this.userType,
     isLoading: isLoading ?? this.isLoading,
-    errorMessage: errorMessage,
+    // Nota: Si errorMessage es nulo (para limpiar), debe pasarse explícitamente.
+    errorMessage: errorMessage, 
   );
 }
 
@@ -43,8 +44,9 @@ class RegisterFormState {
 // NOTIFIER
 // -------------------------------------------------------------------
 
+// Asumo que tu authProvider.notifier tiene el tipo AuthNotifier
 class RegisterViewModel extends StateNotifier<RegisterFormState> {
-  final AuthNotifier authNotifier;
+  final AuthNotifier authNotifier; 
 
   RegisterViewModel(this.authNotifier) : super(RegisterFormState());
 
@@ -61,6 +63,11 @@ class RegisterViewModel extends StateNotifier<RegisterFormState> {
     if (value == userTypeApplicant || value == userTypeCompany) {
       state = state.copyWith(userType: value, errorMessage: null);
     }
+  }
+
+  // 🟢 MÉTODO AÑADIDO: Para que la pantalla pueda limpiar el error después de mostrarlo.
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
   }
 
   // Método de REGISTRO: llama al AuthNotifier con los datos del estado
@@ -97,8 +104,8 @@ class RegisterViewModel extends StateNotifier<RegisterFormState> {
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString().contains('Exception:') 
-            ? e.toString().replaceFirst('Exception: ', '') 
-            : 'Error desconocido durante el registro.',
+          ? e.toString().replaceFirst('Exception: ', '') 
+          : 'Error desconocido durante el registro.',
       );
       return false;
     }

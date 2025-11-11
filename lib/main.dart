@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  // Asegura que los bindings de Flutter estén inicializados.
   // crucial si el authProvider necesita leer datos guardados (tokens) al inicio.
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MainApp()));
