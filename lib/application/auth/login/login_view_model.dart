@@ -19,12 +19,13 @@ class LoginFormState {
     String? email,
     String? password,
     bool? isLoading,
-    String? errorMessage,
+    // El errorMessage se pasa como null para limpiar el error
+    String? errorMessage, 
   }) => LoginFormState(
     email: email ?? this.email,
     password: password ?? this.password,
     isLoading: isLoading ?? this.isLoading,
-    errorMessage: errorMessage,
+    errorMessage: errorMessage, // Se asigna directamente (puede ser null)
   );
 }
 
@@ -42,12 +43,10 @@ class LoginViewModel extends StateNotifier<LoginFormState> {
     state = state.copyWith(password: value, errorMessage: null);
   }
 
-  // para limpiar el estado del formulario.
   void resetState() {
     state = LoginFormState();
   }
   
-  // para limpiar el error después de mostrar el SnackBar.
   void clearError() {
     if (state.errorMessage != null) {
       state = state.copyWith(errorMessage: null);
@@ -70,14 +69,25 @@ class LoginViewModel extends StateNotifier<LoginFormState> {
       );
 
       if (!success) {
+        //El login falló (AuthNotifier ya cambió el estado global si era necesario)
         state = state.copyWith(
-          isLoading: false,
+          isLoading: false, 
           errorMessage: 'Credenciales incorrectas o error en el servidor.',
         );
+      } else {
+        //Login exitoso. GoRouter ya está redirigiendo.
+        // Solo limpiamos el estado local del formulario.
+        state = state.copyWith(
+          isLoading: false, 
+          email: '', // Opcional: limpiar los campos
+          password: '',
+        );
       }
+      
       // Si es exitoso, el AuthNotifier cambia el estado global y GoRouter redirige.
       return success;
     } catch (e) {
+      // Error de conexión o excepción inesperada.
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString().contains('Exception:') 
@@ -90,6 +100,7 @@ class LoginViewModel extends StateNotifier<LoginFormState> {
 }
 
 final loginViewModelProvider = StateNotifierProvider<LoginViewModel, LoginFormState>((ref) {
+  // Observa el Notifier del AuthProvider para inyectarlo en el ViewModel
   final authNotifier = ref.watch(authProvider.notifier);
   return LoginViewModel(authNotifier);
 });

@@ -5,7 +5,7 @@ class AuthResponse {
   /// Identificador único del usuario (UUID de la base de datos).
   final String userId; 
   
-  /// Rol del usuario ('applicant' o 'company').
+  /// Rol del usuario ('aspirante' o 'empresa').
   final String role; 
 
   AuthResponse({
@@ -14,28 +14,38 @@ class AuthResponse {
     required this.role,
   });
 
+  // -------------------------------------------------------------------
+  // CONSTRUCTOR DE FACTORÍA DESDE JSON
+  // -------------------------------------------------------------------
+
   /// Constructor de factoría para crear una instancia de AuthResponse 
   /// a partir de un mapa JSON (respuesta del backend).
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    if (json.containsKey('error') || json['token'] == null) {
-      // Manejar el caso de respuesta de error si es necesario,
-      // aunque el servicio API debería manejar esto.
-      throw Exception('Invalid authentication response format or token missing.');
+    // 1. Verificación Crítica de Campos Obligatorios.
+    if (json['token'] == null || json['userId'] == null || json['role'] == null) {
+      throw const FormatException('Faltan campos obligatorios (token, userId, o role) en la respuesta del servidor.');
     }
     
+    // 2. Mapeo Defensivo
     return AuthResponse(
       token: json['token'] as String,
-      // En un flujo real, el backend también debería devolver el userId y el role
-      // junto con el token después del login/registro.
-      userId: json['userId'] as String, 
+      // Usamos .toString() por seguridad en caso de que el backend envíe un ID numérico,
+      // pero el modelo espera un String.
+      userId: json['userId'].toString(), 
+      // CRÍTICO: Asegúrate de que la clave del rol sea exactamente 'role'.
       role: json['role'] as String,
     );
   }
 
-  /// Método auxiliar para convertir la instancia a JSON (útil para guardar en SecureStorage si es necesario).
+  // -------------------------------------------------------------------
+  // CONVERSIÓN A JSON
+  // -------------------------------------------------------------------
+
+  /// Método auxiliar para convertir la instancia a JSON 
+  /// (útil para guardar en SecureStorage si es necesario).
   Map<String, dynamic> toJson() => {
-        'token': token,
-        'userId': userId,
-        'role': role,
-      };
+    'token': token,
+    'userId': userId,
+    'role': role,
+  };
 }
