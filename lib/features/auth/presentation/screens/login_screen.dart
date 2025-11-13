@@ -45,7 +45,7 @@ class LoginScreen extends ConsumerWidget {
               const SizedBox(height: 50),
               
               TextFormField(
-                // 🚨 CORRECCIÓN 2: Usamos onChanged para actualizar el estado del ViewModel
+                //Usamos onChanged para actualizar el estado del ViewModel
                 onChanged: loginNotifier.onEmailChange,
                 initialValue: loginState.email, // Mantiene el valor en caso de rebuild
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -54,7 +54,7 @@ class LoginScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               
               TextFormField(
-                // 🚨 CORRECCIÓN 2: Usamos onChanged para actualizar el estado del ViewModel
+                // Usamos onChanged para actualizar el estado del ViewModel
                 onChanged: loginNotifier.onPasswordChange,
                 initialValue: loginState.password, // Mantiene el valor en caso de rebuild
                 decoration: const InputDecoration(labelText: 'Contraseña'),
