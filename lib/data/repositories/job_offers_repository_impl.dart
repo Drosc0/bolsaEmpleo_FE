@@ -4,12 +4,13 @@ import '../../application/applicant/user_home_view_model.dart' as applicant_mode
 import '../../application/company/company_home_view_model.dart' as company_models;
 import '../../domain/models/applicant_model.dart';
 import '../../domain/models/job_application.dart';
-import '../../infrastructure/services/job_offers_api_service.dart';
 
 class JobOffersRepositoryImpl implements JobOffersRepository {
-  final JobOffersApiService _apiService;
-
-  JobOffersRepositoryImpl(this._apiService);
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: 'http://localhost:3000/api',
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+  ));
 
   // -----------------------------
   // A. Métodos para el Aspirante
@@ -18,40 +19,22 @@ class JobOffersRepositoryImpl implements JobOffersRepository {
   @override
   Future<List<applicant_models.JobOffer>> fetchRecommendedOffers(String userId) async {
     try {
-      final dtos = await _apiService.getRecommendedOffers(userId);
-      
-      return dtos.map((dto) => applicant_models.JobOffer(
-        id: dto.id,
-        title: dto.title,
-        company: dto.company,
-        location: dto.location,
-        contractType: dto.contractType,
-        minSalary: dto.minSalary,
-        maxSalary: dto.maxSalary,
-        description: dto.description,
-        postedDate: DateTime.parse(dto.postedDate),
-      )).toList();
-      
-    } catch (e) {
-      throw Exception('Error al obtener ofertas recomendadas: $e');
+      final response = await _dio.get('/offers/recommended?userId=$userId');
+      final List<dynamic> data = response.data;
+      return data.map((json) => applicant_models.JobOffer.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw Exception('Error al cargar ofertas recomendadas: ${e.message}');
     }
   }
   
   @override
   Future<List<JobApplication>> fetchAppliedOffers(String userId) async {
     try {
-      final dtos = await _apiService.getAppliedOffers(userId);
-      
-      return dtos.map((dto) => JobApplication(
-        id: dto.id,
-        jobOfferId: dto.jobOfferId,
-        applicantId: userId,
-        status: JobApplication.statusFromString(dto.status),
-        appliedAt: DateTime.parse(dto.appliedAt),
-      )).toList();
-      
-    } catch (e) {
-      throw Exception('Error al obtener postulaciones: $e');
+      final response = await _dio.get('/offers/applied?userId=$userId');
+      final List<dynamic> data = response.data;
+      return data.map((json) => JobApplication.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw Exception('Error al cargar postulaciones: ${e.message}');
     }
   }
 
@@ -62,17 +45,11 @@ class JobOffersRepositoryImpl implements JobOffersRepository {
   @override
   Future<List<company_models.PostedJobOffer>> fetchPostedOffers(String companyId) async {
     try {
-      final dtos = await _apiService.getPostedOffers(companyId);
-      
-      return dtos.map((dto) => company_models.PostedJobOffer(
-        id: dto.id,
-        title: dto.title,
-        totalApplications: dto.totalApplications,
-        newApplications: dto.newApplications,
-      )).toList();
-      
-    } catch (e) {
-      throw Exception('Error al obtener ofertas publicadas: $e');
+      final response = await _dio.get('/company/offers?companyId=$companyId');
+      final List<dynamic> data = response.data;
+      return data.map((json) => company_models.PostedJobOffer.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw Exception('Error al cargar ofertas publicadas: ${e.message}');
     }
   }
 
@@ -87,35 +64,28 @@ class JobOffersRepositoryImpl implements JobOffersRepository {
     required int maxSalary,
   }) async {
     try {
-      await _apiService.createJobOffer(
-        companyId: companyId,
-        title: title,
-        description: description,
-        location: location,
-        contractType: contractType,
-        minSalary: minSalary,
-        maxSalary: maxSalary,
-      );
-    } catch (e) {
-      throw Exception('Fallo al publicar la oferta: $e');
+      await _dio.post('/company/offers', data: {
+        'companyId': companyId,
+        'title': title,
+        'description': description,
+        'location': location,
+        'contractType': contractType,
+        'minSalary': minSalary,
+        'maxSalary': maxSalary,
+      });
+    } on DioException catch (e) {
+      throw Exception('Fallo al publicar la oferta: ${e.message}');
     }
   }
 
   @override
   Future<List<ApplicantModel>> fetchApplicantsForOffer(String jobOfferId) async {
     try {
-      final List<ApplicantDetailDto> dtos = await _apiService.getApplicantsByOffer(jobOfferId);
-
-      return dtos.map((dto) => ApplicantModel(
-        id: dto.applicantId,
-        name: dto.name,
-        email: dto.email,
-        status: dto.applicationStatus,
-        appliedAt: DateTime.parse(dto.appliedAt),
-      )).toList();
-      
-    } catch (e) {
-      throw Exception('Error al obtener postulantes para la oferta $jobOfferId: $e');
+      final response = await _dio.get('/offers/$jobOfferId/applicants');
+      final List<dynamic> data = response.data;
+      return data.map((json) => ApplicantModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw Exception('Error al obtener postulantes: ${e.message}');
     }
   }
   
@@ -125,12 +95,9 @@ class JobOffersRepositoryImpl implements JobOffersRepository {
     required String newStatus,
   }) async {
     try {
-      await _apiService.updateApplicationStatus(
-        applicationId: applicationId,
-        newStatus: newStatus,
-      );
-    } catch (e) {
-      throw Exception('Error al actualizar el estado de la postulación: $e');
+      await _dio.patch('/applications/$applicationId', data: {'status': newStatus});
+    } on DioException catch (e) {
+      throw Exception('Error al actualizar estado: ${e.message}');
     }
   }
 }

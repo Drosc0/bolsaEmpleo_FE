@@ -1,5 +1,5 @@
-import 'package:bolsa_empleo/application/auth/auth_provider.dart';
 import 'package:bolsa_empleo/application/common/home_state.dart';
+import 'package:bolsa_empleo/core/di/providers.dart' hide jobOffersRepositoryProvider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/repositories/job_offers_repository.dart'; 
 

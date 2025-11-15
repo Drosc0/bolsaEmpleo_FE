@@ -1,11 +1,10 @@
 import 'package:bolsa_empleo/features/applicant/presentation/screens/user_profile_screen.dart';
-import 'package:dio/dio.dart';
+
 import '../../infrastructure/services/user_profile_api_service.dart';
 import '../../application/applicant/profile/user_profile_view_model.dart' as domain_models;
 
 class UserProfileRepositoryImpl implements UserProfileRepository {
   final UserProfileApiService _apiService;
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000/api'));
 
   UserProfileRepositoryImpl(this._apiService);
 
@@ -31,7 +30,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         experience: experience,
       );
     } catch (e) {
-      throw Exception('Error al obtener el perfil: $e');
+      throw Exception('Error al obtener perfil: $e');
     }
   }
 
@@ -106,10 +105,13 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   @override
   Future<Map<String, dynamic>> fetchBasicProfile(String userId) async {
     try {
-      final response = await _dio.get('/users/$userId/basic');
-      return response.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      throw Exception('Error al cargar perfil básico: ${e.message}');
+      final dto = await _apiService.fetchProfile(userId);
+      return {
+        'name': dto.name,
+        'email': dto.email,
+      };
+    } catch (e) {
+      throw Exception('Error al cargar perfil básico: $e');
     }
   }
 }

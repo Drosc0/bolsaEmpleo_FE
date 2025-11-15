@@ -1,6 +1,6 @@
+import 'package:bolsa_empleo/core/di/providers.dart';
+import 'package:bolsa_empleo/features/applicant/presentation/screens/user_profile_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../domain/repositories/user_profile_repository.dart'; 
-import '../../auth/auth_provider.dart'; 
 
 // -------------------------------------------------------------------
 // 1. MODELOS DE DOMINIO

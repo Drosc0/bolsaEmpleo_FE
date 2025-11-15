@@ -161,13 +161,3 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 }
-
-// ----------------------------------------------------------------------
-// 4. PROVIDER: Inyección de dependencias
-// ----------------------------------------------------------------------
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final storageService = ref.watch(secureStorageServiceProvider);
-  final apiService = ref.watch(authApiServiceProvider);
-
-  return AuthNotifier(storageService, apiService);
-});

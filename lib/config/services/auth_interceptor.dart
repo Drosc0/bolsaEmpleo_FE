@@ -1,3 +1,4 @@
+import 'package:bolsa_empleo/core/di/providers.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/auth/auth_provider.dart'; // Necesitamos el AuthProvider
