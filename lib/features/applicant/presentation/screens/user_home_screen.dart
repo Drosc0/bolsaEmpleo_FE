@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../application/auth/auth_provider.dart'; 
-// Importar el ViewModel del aspirante
+import '../../../../application/auth/auth_provider.dart';
 import '../../../../application/applicant/user_home_view_model.dart';
 import '../../../../application/common/home_state.dart';
 import '../../../shared/presentation/widgets/responsive_layout.dart';
@@ -31,9 +30,9 @@ class UserHomeScreen extends ConsumerWidget {
   }
 }
 
-// ----------------------------------------------------------------
+// -----------------------------------------
 // Sub-Widget para la vista WEB (3 Columnas)
-// ----------------------------------------------------------------
+// -----------------------------------------
 class _WebView extends StatelessWidget {
   final AuthNotifier authNotifier;
 
@@ -68,9 +67,9 @@ class _WebView extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------------
+// --------------------------------
 // Columnas (Widgets de Contenido)
-// ----------------------------------------------------------------
+// -------------------------------
 
 class CurriculumColumn extends StatelessWidget {
   const CurriculumColumn({super.key});

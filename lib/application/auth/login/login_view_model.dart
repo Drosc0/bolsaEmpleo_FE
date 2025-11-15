@@ -38,9 +38,9 @@ class LoginFormState {
   bool get canSubmit => email.isNotEmpty && password.isNotEmpty && isValidEmail;
 }
 
-// ----------------------------------------------------------------------
+// -------------
 // 2. VIEWMODEL
-// ----------------------------------------------------------------------
+// -------------
 class LoginViewModel extends StateNotifier<LoginFormState> {
   final AuthNotifier _authNotifier;
   final Ref _ref;
@@ -106,9 +106,9 @@ class LoginViewModel extends StateNotifier<LoginFormState> {
   }
 }
 
-// ----------------------------------------------------------------------
+// ------------
 // 3. PROVIDER
-// ----------------------------------------------------------------------
+// ------------
 final loginViewModelProvider = StateNotifierProvider<LoginViewModel, LoginFormState>((ref) {
   final authNotifier = ref.watch(authProvider.notifier);
   return LoginViewModel(authNotifier, ref);

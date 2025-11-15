@@ -10,31 +10,31 @@ import '../../features/job_offers/presentation/screens/job_offers_list_screen.da
 import '../../features/company/presentation/screens/company_home_screen.dart';
 import '../../features/applicant/presentation/screens/user_home_screen.dart';
 
-// ----------------------------------------------------------------------
+// ---------------------------
 // RUTAS PÚBLICAS Y PROTEGIDAS
-// ----------------------------------------------------------------------
+// ---------------------------
 final publicAuthRoutes = ['/login', '/register'];
 final roleProtectedRoutes = ['/applicant', '/company'];
 
-// ----------------------------------------------------------------------
-// PROVIDER: goRouterProvider (CORREGIDO: ref.listen DENTRO)
-// ----------------------------------------------------------------------
+// --------------------------
+// PROVIDER: goRouterProvider
+// --------------------------
 final goRouterProvider = Provider<GoRouter>((ref) {
   // 1. Crear el router
   final router = GoRouter(
     initialLocation: '/',
 
-    // ------------------------------------------------------------------
+    // ----------------------------
     // REDIRECT GLOBAL (Middleware)
-    // ------------------------------------------------------------------
+    // ----------------------------
     redirect: (context, state) {
       final authState = ref.read(authProvider);
       final status = authState.status;
       final role = authState.authData?.role.toLowerCase();
       final location = state.matchedLocation;
 
-      // DEBUG: Quitar en pro
-      print('ROUTER: $status | $role | $location');
+      // DEBUG:
+      //print('ROUTER: $status | $role | $location');
 
       // 1. Checking → no redirigir
       if (status == AuthStatus.checking) return null;
@@ -68,9 +68,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
 
-    // ------------------------------------------------------------------
+    // ------
     // RUTAS
-    // ------------------------------------------------------------------
+    // ------
     routes: [
       // RAÍZ: Redirige según rol
       GoRoute(
@@ -136,9 +136,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 
-  // ------------------------------------------------------------------
-  // ¡CLAVE! Escuchar cambios de auth DENTRO del Provider
-  // ------------------------------------------------------------------
+  // -------------------------------------------
+  //Escuchar cambios de auth DENTRO del Provider
+  // -------------------------------------------
   ref.listen(authProvider, (previous, next) {
     final statusChanged = previous?.status != next.status;
     final roleChanged = previous?.authData?.role != next.authData?.role;
