@@ -1,47 +1,52 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// Claves usadas para almacenar los datos
+// --------------------------------------------------------------------------
+// CLAVES DE ALMACENAMIENTO
+// --------------------------------------------------------------------------
 const String _JWT_KEY = 'jwt_token';
 const String _USER_ROLE_KEY = 'user_role';
 const String _USER_ID_KEY = 'user_id';
 
 // --------------------------------------------------------------------------
-// 1. Servicio de Storage
+// 1. SERVICIO DE STORAGE SEGURO
 // --------------------------------------------------------------------------
-
 class SecureStorageService {
   final FlutterSecureStorage _storage;
 
   SecureStorageService(this._storage);
 
-  // Guardar datos de sesión
+  // ----------------------------------------------------------------------
+  // Guardar datos de autenticación
+  // ----------------------------------------------------------------------
   Future<void> setAuthData({
     required String token,
     required String role,
-    required String userId,
+    required String userId, // ← String (UUID o número como texto)
   }) async {
     await _storage.write(key: _JWT_KEY, value: token);
     await _storage.write(key: _USER_ROLE_KEY, value: role);
     await _storage.write(key: _USER_ID_KEY, value: userId);
   }
 
-  // Leer el token
-  Future<String?> readToken() async {
-    return _storage.read(key: _JWT_KEY);
-  }
-  
-  // Leer el ID de usuario
-  Future<String?> readUserId() async {
-    return _storage.read(key: _USER_ID_KEY);
-  }
+  // ----------------------------------------------------------------------
+  // Leer token
+  // ----------------------------------------------------------------------
+  Future<String?> readToken() => _storage.read(key: _JWT_KEY);
 
-  // Leer el rol
-  Future<String?> readRole() async {
-    return _storage.read(key: _USER_ROLE_KEY);
-  }
+  // ----------------------------------------------------------------------
+  // Leer userId como String
+  // ----------------------------------------------------------------------
+  Future<String?> readUserId() => _storage.read(key: _USER_ID_KEY);
 
-  // Eliminar todos los datos de sesión (Logout)
+  // ----------------------------------------------------------------------
+  // Leer rol
+  // ----------------------------------------------------------------------
+  Future<String?> readRole() => _storage.read(key: _USER_ROLE_KEY);
+
+  // ----------------------------------------------------------------------
+  // Eliminar datos de sesión (logout)
+  // ----------------------------------------------------------------------
   Future<void> deleteAuthData() async {
     await _storage.delete(key: _JWT_KEY);
     await _storage.delete(key: _USER_ROLE_KEY);
@@ -50,11 +55,13 @@ class SecureStorageService {
 }
 
 // --------------------------------------------------------------------------
-// 2. Providers
+// 2. PROVIDERS
 // --------------------------------------------------------------------------
-
 final flutterSecureStorageProvider = Provider<FlutterSecureStorage>((ref) {
-  return const FlutterSecureStorage();
+  return const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
 });
 
 final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {

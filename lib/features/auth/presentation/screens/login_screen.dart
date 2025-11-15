@@ -3,27 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Observar el estado y el notificador
+    // 1. Observar estado y notificador
     final loginState = ref.watch(loginViewModelProvider);
     final loginNotifier = ref.read(loginViewModelProvider.notifier);
 
-    // 2. Escuchar los cambios de estado (solo para mostrar errores)
+    // 2. Mostrar errores con SnackBar
     ref.listen<LoginFormState>(loginViewModelProvider, (previous, next) {
       if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
-        if (context.mounted) { 
+        if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(next.errorMessage!),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
             ),
           );
-          //Limpiar el error después de mostrarlo para evitar que se muestre de nuevo.
           loginNotifier.clearError();
         }
       }
@@ -41,57 +40,74 @@ class LoginScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 50),
-              
+
+              // EMAIL
               TextFormField(
                 onChanged: loginNotifier.onEmailChange,
                 initialValue: loginState.email,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
-              
+
+              // PASSWORD
               TextFormField(
                 onChanged: loginNotifier.onPasswordChange,
                 initialValue: loginState.password,
-                decoration: const InputDecoration(labelText: 'Contraseña'),
+                decoration: const InputDecoration(
+                  labelText: 'Contraseña',
+                  border: OutlineInputBorder(),
+                ),
                 obscureText: true,
+                textInputAction: TextInputAction.done,
               ),
               const SizedBox(height: 32),
-              
+
+              // BOTÓN LOGIN
               ElevatedButton(
                 onPressed: loginState.isLoading
-                    ? null // Deshabilitar si está cargando
+                    ? null
                     : () async {
-                        // El ViewModel ya tiene los datos por los onChanged.
-                        final success = await loginNotifier.login(); // Esperar el resultado del login
-                        
-                        // Si el login es exitoso, forzar la navegación a la raíz.
-                        // GoRouter tomará este cambio de ruta, verá que AuthStatus es authenticated,
-                        // y el Redirect lo enviará a /applicant o /company según el rol, o eso espero.
+                        final success = await loginNotifier.login();
+
                         if (success && context.mounted) {
-                            context.go('/'); 
+                          // ¡CLAVE! Navegar a raíz para que GoRouter redirija por rol
+                          context.go('/');
                         }
                       },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
                 child: loginState.isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
                       )
-                    : const Text('Entrar'),
+                    : const Text('Entrar', style: TextStyle(fontSize: 16)),
               ),
 
               const SizedBox(height: 20),
-              
+
+              // REGISTRO
               TextButton(
                 onPressed: loginState.isLoading
                     ? null
                     : () {
                         context.go('/register');
-                        // Limpiamos el estado al navegar para empezar de cero
-                        loginNotifier.resetState(); 
+                        loginNotifier.resetState();
                       },
-                child: const Text('¿No tienes cuenta? Regístrate aquí.'),
+                child: const Text(
+                  '¿No tienes cuenta? Regístrate aquí.',
+                  style: TextStyle(fontSize: 14),
+                ),
               ),
             ],
           ),

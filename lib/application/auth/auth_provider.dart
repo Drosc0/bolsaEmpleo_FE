@@ -1,72 +1,87 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../infrastructure/services/auth_api_service.dart';
 import '../../config/services/secure_storage_service.dart';
-import '../../infrastructure/models/auth_response.dart'; 
+import '../../infrastructure/models/auth_response.dart';
 
 // ----------------------------------------------------------------------
-// 1. STATE y STATUS
+// 1. ENUM: Estado de autenticación
 // ----------------------------------------------------------------------
-
 enum AuthStatus { checking, authenticated, unauthenticated }
 
+// ----------------------------------------------------------------------
+// 2. STATE: Datos de la sesión
+// ----------------------------------------------------------------------
 class AuthState {
   final AuthStatus status;
-  final AuthResponse? authData; // Contiene el token, userId y role
+  final AuthResponse? authData; // token + userId (String) + role
 
-  AuthState({required this.status, this.authData});
-  
+  AuthState({
+    required this.status,
+    this.authData,
+  });
+
   factory AuthState.initial() => AuthState(status: AuthStatus.checking);
-  
-  AuthState copyWith({AuthStatus? status, AuthResponse? authData}) {
-    // Permite pasar authData: null para desautenticar
+
+  AuthState copyWith({
+    AuthStatus? status,
+    AuthResponse? authData,
+  }) {
     return AuthState(
       status: status ?? this.status,
-      // Si status es unauthenticated, forzamos authData a ser null
-      authData: status == AuthStatus.unauthenticated ? null : authData ?? this.authData,
+      authData: status == AuthStatus.unauthenticated ? null : (authData ?? this.authData),
     );
   }
 }
 
 // ----------------------------------------------------------------------
-// 2. NOTIFIER: Lógica de la Sesión Global
+// 3. NOTIFIER: Lógica de autenticación
 // ----------------------------------------------------------------------
-
 class AuthNotifier extends StateNotifier<AuthState> {
-  final SecureStorageService _storageService; 
-  final AuthApiService _authService; 
+  final SecureStorageService _storageService;
+  final AuthApiService _authService;
 
   AuthNotifier(this._storageService, this._authService) : super(AuthState.initial()) {
-    // Intentar cargar la sesión al inicio
     checkAuthStatus();
   }
 
-  // Verificar estado de autenticación al inicio de la app
+  // ------------------------------------------------------------------
+  // Verifica si hay sesión guardada al iniciar la app
+  // ------------------------------------------------------------------
   Future<void> checkAuthStatus() async {
-    // 1. Leer los datos desde el Secure Storage
-    final token = await _storageService.readToken();
-    final userId = await _storageService.readUserId();
-    final role = await _storageService.readRole();
-    
-    if (token != null && userId != null && role != null) {
-        // 2. Reconstruir el AuthResponse
-        final savedAuthData = AuthResponse(token: token, userId: userId, role: role); 
-        
-        // 3. Establecer como autenticado
-        state = state.copyWith(
-            status: AuthStatus.authenticated, 
-            authData: savedAuthData
+    try {
+      final token = await _storageService.readToken();
+      final userId = await _storageService.readUserId(); // ← String?
+      final role = await _storageService.readRole();     // ← String?
+
+      if (token != null && userId != null && role != null) {
+        final savedAuthData = AuthResponse(
+          token: token,
+          userId: userId,  // ← String
+          role: role,
         );
-    } else {
-      // 4. Si falta cualquier dato, desautenticar
-      state = state.copyWith(status: AuthStatus.unauthenticated, authData: null);
+
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          authData: savedAuthData,
+        );
+      } else {
+        state = state.copyWith(
+          status: AuthStatus.unauthenticated,
+          authData: null,
+        );
+      }
+    } catch (e) {
+      // En caso de error de lectura, forzar logout
+      state = state.copyWith(
+        status: AuthStatus.unauthenticated,
+        authData: null,
+      );
     }
   }
 
-  // ------------------------------------
-  // MÉTODOS DE AUTENTICACIÓN
-  // ------------------------------------
-
-  // Manejo de Registro
+  // ------------------------------------------------------------------
+  // Registro de usuario
+  // ------------------------------------------------------------------
   Future<bool> registerUser({
     required String email,
     required String password,
@@ -74,76 +89,85 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     try {
       state = state.copyWith(status: AuthStatus.checking);
-      
+
       final authResponse = await _authService.register(
         email: email,
         password: password,
-        userType: userType, 
+        userType: userType,
       );
-      
-      // Si el backend devuelve AuthResponse (registro exitoso)
-      setAuthenticated(authResponse);
+
+      await setAuthenticated(authResponse);
       return true;
     } catch (e) {
-      // Manejo de excepción
       state = state.copyWith(status: AuthStatus.unauthenticated);
       return false;
     }
   }
 
-  // Manejo de Login
-  Future<bool> loginUser({required String email, required String password}) async {
+  // ------------------------------------------------------------------
+  // Login de usuario
+  // ------------------------------------------------------------------
+  Future<bool> loginUser({
+    required String email,
+    required String password,
+  }) async {
     try {
-      state = state.copyWith(status: AuthStatus.checking); 
-      
-      final authResponse = await _authService.login(email: email, password: password);
-      
-      // Si la llamada a la API es exitosa, llama a setAuthenticated (que actualiza el estado).
-      setAuthenticated(authResponse);
+      state = state.copyWith(status: AuthStatus.checking);
+
+      final authResponse = await _authService.login(
+        email: email,
+        password: password,
+      );
+
+      await setAuthenticated(authResponse); // ← Espera guardado
       return true;
     } catch (e) {
-      // Manejo de excepción (Error de conexión, credenciales inválidas, etc.)
-      state = state.copyWith(status: AuthStatus.unauthenticated); // Establece el estado final de fallo
+      state = state.copyWith(status: AuthStatus.unauthenticated);
       return false;
     }
   }
 
+  // ------------------------------------------------------------------
+  // Guarda datos en storage + actualiza estado (ASÍNCRONO)
+  // ------------------------------------------------------------------
+  Future<void> setAuthenticated(AuthResponse data) async {
+    try {
+      // 1. Guardar en SecureStorage
+      await _storageService.setAuthData(
+        token: data.token,
+        role: data.role,
+        userId: data.userId, // ← String → String
+      );
 
-  // Método llamado después de un LOGIN o REGISTER exitoso
-  void setAuthenticated(AuthResponse data) {
-    // 1. Guardar los datos de forma persistente (Asíncrono)
-    _storageService.setAuthData(
-      token: data.token, 
-      role: data.role, 
-      userId: data.userId
-    );
-
-    // 2. Actualizar el estado global
-    state = state.copyWith(
-      status: AuthStatus.authenticated,
-      authData: data,
-    );
+      // 2. Solo después, actualizar estado
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        authData: data,
+      );
+    } catch (e) {
+      // Si falla el guardado, no autenticar
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+    }
   }
 
-  // Método para cerrar sesión
+  // ------------------------------------------------------------------
+  // Cerrar sesión
+  // ------------------------------------------------------------------
   Future<void> logout() async {
-    // 1. Limpiar el token del storage (Asíncrono)
     await _storageService.deleteAuthData();
-
-    // 2. Actualizar el estado global
-    state = state.copyWith(status: AuthStatus.unauthenticated, authData: null);
+    state = state.copyWith(
+      status: AuthStatus.unauthenticated,
+      authData: null,
+    );
   }
 }
 
 // ----------------------------------------------------------------------
-// 3. PROVIDER (Inyección de dependencias)
+// 4. PROVIDER: Inyección de dependencias
 // ----------------------------------------------------------------------
-
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  // 1. Obtener dependencias
   final storageService = ref.watch(secureStorageServiceProvider);
-  final apiService = ref.watch(authApiServiceProvider); 
-  
-  // 2. Crear el Notifier
+  final apiService = ref.watch(authApiServiceProvider);
+
   return AuthNotifier(storageService, apiService);
 });

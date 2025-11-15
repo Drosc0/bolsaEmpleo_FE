@@ -1,7 +1,9 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bolsa_empleo/application/auth/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import 'package:bolsa_empleo/application/auth/auth_provider.dart'; 
 
-// Definición del estado del formulario de Login
+// ----------------------------------------------------------------------
+// 1. ESTADO DEL FORMULARIO
+// ----------------------------------------------------------------------
 class LoginFormState {
   final String email;
   final String password;
@@ -19,88 +21,95 @@ class LoginFormState {
     String? email,
     String? password,
     bool? isLoading,
-    // El errorMessage se pasa como null para limpiar el error
-    String? errorMessage, 
-  }) => LoginFormState(
-    email: email ?? this.email,
-    password: password ?? this.password,
-    isLoading: isLoading ?? this.isLoading,
-    errorMessage: errorMessage, // Se asigna directamente (puede ser null)
-  );
+    String? errorMessage,
+  }) {
+    return LoginFormState(
+      email: email ?? this.email,
+      password: password ?? this.password,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage,
+    );
+  }
+
+  bool get isValidEmail {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  bool get canSubmit => email.isNotEmpty && password.isNotEmpty && isValidEmail;
 }
 
-// Notifier para la lógica del formulario de Login
+// ----------------------------------------------------------------------
+// 2. VIEWMODEL
+// ----------------------------------------------------------------------
 class LoginViewModel extends StateNotifier<LoginFormState> {
-  final AuthNotifier authNotifier;
+  final AuthNotifier _authNotifier;
+  final Ref _ref;
 
-  LoginViewModel(this.authNotifier) : super(LoginFormState());
+  LoginViewModel(this._authNotifier, this._ref) : super(LoginFormState());
 
   void onEmailChange(String value) {
-    state = state.copyWith(email: value, errorMessage: null);
+    state = state.copyWith(email: value.trim(), errorMessage: null);
   }
 
   void onPasswordChange(String value) {
     state = state.copyWith(password: value, errorMessage: null);
   }
 
-  void resetState() {
-    state = LoginFormState();
-  }
-  
   void clearError() {
     if (state.errorMessage != null) {
       state = state.copyWith(errorMessage: null);
     }
   }
 
-  // Método de LOGIN: llama al AuthNotifier con los datos del estado
+  void resetState() {
+    state = LoginFormState();
+  }
+
   Future<bool> login() async {
     if (state.email.isEmpty || state.password.isEmpty) {
-      state = state.copyWith(errorMessage: 'Rellena todos los campos.');
+      state = state.copyWith(errorMessage: 'Completa todos los campos.');
+      return false;
+    }
+
+    if (!state.isValidEmail) {
+      state = state.copyWith(errorMessage: 'Ingresa un email válido.');
       return false;
     }
 
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final success = await authNotifier.loginUser(
+      final success = await _authNotifier.loginUser(
         email: state.email,
         password: state.password,
       );
 
-      if (!success) {
-        //El login falló (AuthNotifier ya cambió el estado global si era necesario)
-        state = state.copyWith(
-          isLoading: false, 
-          errorMessage: 'Credenciales incorrectas o error en el servidor.',
-        );
+      if (success) {
+        state = state.copyWith(isLoading: false, email: '', password: '');
+        return true;
       } else {
-        //Login exitoso. GoRouter ya está redirigiendo.
-        // Solo limpiamos el estado local del formulario.
         state = state.copyWith(
-          isLoading: false, 
-          email: '', // Opcional: limpiar los campos
-          password: '',
+          isLoading: false,
+          errorMessage: 'Email o contraseña incorrectos.',
         );
+        return false;
       }
-      
-      // Si es exitoso, el AuthNotifier cambia el estado global y GoRouter redirige.
-      return success;
     } catch (e) {
-      // Error de conexión o excepción inesperada.
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().contains('Exception:') 
-            ? e.toString().replaceFirst('Exception: ', '') 
-            : 'Error desconocido durante el inicio de sesión.',
-      );
+      final message = e.toString();
+      final cleanMessage = message.contains('Exception:')
+          ? message.replaceFirst('Exception: ', '')
+          : 'Error de conexión. Intenta de nuevo.';
+
+      state = state.copyWith(isLoading: false, errorMessage: cleanMessage);
       return false;
     }
   }
 }
 
+// ----------------------------------------------------------------------
+// 3. PROVIDER
+// ----------------------------------------------------------------------
 final loginViewModelProvider = StateNotifierProvider<LoginViewModel, LoginFormState>((ref) {
-  // Observa el Notifier del AuthProvider para inyectarlo en el ViewModel
   final authNotifier = ref.watch(authProvider.notifier);
-  return LoginViewModel(authNotifier);
+  return LoginViewModel(authNotifier, ref);
 });
