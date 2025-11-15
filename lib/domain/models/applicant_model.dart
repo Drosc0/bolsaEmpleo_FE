@@ -26,9 +26,8 @@ class ApplicantModel {
       name: json['name'] as String,
       email: json['email'] as String,
       status: json['status'] as String,
-      // Convierte la cadena ISO 8601 (del backend) a un objeto DateTime de Dart.
       appliedAt: DateTime.parse(json['appliedAt'] as String), 
-      // Si añades cvUrl: cvUrl: json['cvUrl'] as String?,
+      // cvUrl: cvUrl: json['cvUrl'] as String?,
     );
   }
 

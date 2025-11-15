@@ -1,10 +1,10 @@
+import 'package:bolsa_empleo/core/di/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/applicant/user_home_view_model.dart' as applicant_models;
 import '../../application/company/company_home_view_model.dart' as company_models;
 import '../../domain/models/applicant_model.dart';
 import '../../domain/models/job_application.dart';
-import '../../infrastructure/services/job_offers_api_service.dart'; 
-
+import '../../infrastructure/services/job_offers_api_service.dart';
 
 // ----------------------
 // 1. Repositorio (Clase)
@@ -19,12 +19,10 @@ class JobOffersRepository {
   // A. Métodos para el Aspirante
   // ------------------------------
   
-  /// Obtiene ofertas de trabajo recomendadas para un usuario específico.
   Future<List<applicant_models.JobOffer>> fetchRecommendedOffers(String userId) async {
     try {
       final dtos = await _apiService.getRecommendedOffers(userId);
       
-      // Mapear DTOs a Modelos de Dominio (ViewModel)
       return dtos.map((dto) => applicant_models.JobOffer(
         id: dto.id,
         title: dto.title,
@@ -34,7 +32,6 @@ class JobOffersRepository {
         minSalary: dto.minSalary,
         maxSalary: dto.maxSalary,
         description: dto.description,
-        // Asegúrate de que JobOffer tiene un constructor que acepta todos estos campos nombrados
         postedDate: DateTime.parse(dto.postedDate),
       )).toList();
       
@@ -43,7 +40,6 @@ class JobOffersRepository {
     }
   }
   
-  /// Obtiene el historial de postulaciones de un aspirante.
   Future<List<JobApplication>> fetchAppliedOffers(String userId) async {
     try {
       final dtos = await _apiService.getAppliedOffers(userId);
@@ -51,9 +47,7 @@ class JobOffersRepository {
       return dtos.map((dto) => JobApplication(
         id: dto.id,
         jobOfferId: dto.jobOfferId,
-        // En una app real, el applicantId vendría del contexto de autenticación o del DTO
-        applicantId: userId, 
-        // Asumo que tienes una función o constructor para manejar el mapeo de status
+        applicantId: userId,
         status: JobApplication.statusFromString(dto.status),
         appliedAt: DateTime.parse(dto.appliedAt),
       )).toList();
@@ -63,30 +57,23 @@ class JobOffersRepository {
     }
   }
 
-
   // --------------------------
   // B. Métodos para la Empresa
   // --------------------------
   
-  /// Obtiene las ofertas publicadas por una empresa, incluyendo métricas de postulación.
+  /// Usa `fromJson` → evita errores de argumentos faltantes
   Future<List<company_models.PostedJobOffer>> fetchPostedOffers(String companyId) async {
     try {
       final dtos = await _apiService.getPostedOffers(companyId);
       
-      // Mapear DTOs de Infraestructura a Modelos de Dominio (ViewModel)
-      return dtos.map((dto) => company_models.PostedJobOffer(
-        id: dto.id,
-        title: dto.title,
-        totalApplications: dto.totalApplications,
-        newApplications: dto.newApplications,
-      )).toList();
+      // Usa fromJson → seguro, limpio, escalable
+      return dtos.map((dto) => company_models.PostedJobOffer.fromJson(dto.toJson())).toList();
       
     } catch (e) {
       throw Exception('Error al obtener ofertas publicadas: $e');
     }
   }
 
-  /// Crea y publica una nueva oferta de trabajo.
   Future<void> createJobOffer({
     required String companyId,
     required String title,
@@ -106,13 +93,11 @@ class JobOffersRepository {
         minSalary: minSalary,
         maxSalary: maxSalary,
       );
-
     } catch (e) {
       throw Exception('Fallo al publicar la oferta: $e');
     }
   }
 
-  /// Obtiene la lista de postulantes para una oferta de trabajo específica.
   Future<List<ApplicantModel>> fetchApplicantsForOffer(String jobOfferId) async {
     try {
       final List<ApplicantDetailDto> dtos = await _apiService.getApplicantsByOffer(jobOfferId);
@@ -121,7 +106,7 @@ class JobOffersRepository {
         id: dto.applicantId,
         name: dto.name,
         email: dto.email,
-        status: dto.applicationStatus, 
+        status: dto.applicationStatus,
         appliedAt: DateTime.parse(dto.appliedAt),
       )).toList();
       
@@ -130,7 +115,6 @@ class JobOffersRepository {
     }
   }
   
-  /// Cambia el estado de una postulación (ej. de 'Enviada' a 'Entrevista').
   Future<void> updateApplicationStatus({
     required String applicationId,
     required String newStatus,
@@ -150,7 +134,7 @@ class JobOffersRepository {
 // 2. Provider del Repositorio
 // --------------------------------------------------------------------------
 
-final jobOffersRepositoryProvider = Provider((ref) {
-  final apiService = ref.watch(jobOffersApiServiceProvider); 
+final jobOffersRepositoryProvider = Provider<JobOffersRepository>((ref) {
+  final apiService = ref.watch(jobOffersApiServiceProvider);
   return JobOffersRepository(apiService);
 });
