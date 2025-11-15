@@ -92,21 +92,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   // Manejo de Login
-Future<bool> loginUser({required String email, required String password}) async {
-  try {
-    //  state = state.copyWith(status: AuthStatus.checking); 
-    
-    final authResponse = await _authService.login(email: email, password: password);
-    
-    // Si la llamada a la API es exitosa, llama a setAuthenticated (que actualiza el estado).
-    setAuthenticated(authResponse);
-    return true;
-  } catch (e) {
-    // Manejo de excepción (Error de conexión, credenciales inválidas, etc.)
-    state = state.copyWith(status: AuthStatus.unauthenticated); // Establece el estado final de fallo
-    return false;
+  Future<bool> loginUser({required String email, required String password}) async {
+    try {
+      state = state.copyWith(status: AuthStatus.checking); 
+      
+      final authResponse = await _authService.login(email: email, password: password);
+      
+      // Si la llamada a la API es exitosa, llama a setAuthenticated (que actualiza el estado).
+      setAuthenticated(authResponse);
+      return true;
+    } catch (e) {
+      // Manejo de excepción (Error de conexión, credenciales inválidas, etc.)
+      state = state.copyWith(status: AuthStatus.unauthenticated); // Establece el estado final de fallo
+      return false;
+    }
   }
-}
 
 
   // Método llamado después de un LOGIN o REGISTER exitoso

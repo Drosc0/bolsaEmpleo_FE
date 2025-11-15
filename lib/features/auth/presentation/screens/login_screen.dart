@@ -10,13 +10,11 @@ class LoginScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 1. Observar el estado y el notificador
-    // Usamos .select para evitar rebuilds innecesarios en todo el widget.
     final loginState = ref.watch(loginViewModelProvider);
     final loginNotifier = ref.read(loginViewModelProvider.notifier);
 
     // 2. Escuchar los cambios de estado (solo para mostrar errores)
     ref.listen<LoginFormState>(loginViewModelProvider, (previous, next) {
-      // Manejar el Error
       if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
         if (context.mounted) { 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -25,7 +23,7 @@ class LoginScreen extends ConsumerWidget {
               backgroundColor: Colors.red,
             ),
           );
-          // Opcional: Limpiar el error después de mostrarlo para evitar que se muestre de nuevo.
+          //Limpiar el error después de mostrarlo para evitar que se muestre de nuevo.
           loginNotifier.clearError();
         }
       }
@@ -45,18 +43,16 @@ class LoginScreen extends ConsumerWidget {
               const SizedBox(height: 50),
               
               TextFormField(
-                //Usamos onChanged para actualizar el estado del ViewModel
                 onChanged: loginNotifier.onEmailChange,
-                initialValue: loginState.email, // Mantiene el valor en caso de rebuild
+                initialValue: loginState.email,
                 decoration: const InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
               
               TextFormField(
-                // Usamos onChanged para actualizar el estado del ViewModel
                 onChanged: loginNotifier.onPasswordChange,
-                initialValue: loginState.password, // Mantiene el valor en caso de rebuild
+                initialValue: loginState.password,
                 decoration: const InputDecoration(labelText: 'Contraseña'),
                 obscureText: true,
               ),
@@ -65,9 +61,16 @@ class LoginScreen extends ConsumerWidget {
               ElevatedButton(
                 onPressed: loginState.isLoading
                     ? null // Deshabilitar si está cargando
-                    : () {
+                    : () async {
                         // El ViewModel ya tiene los datos por los onChanged.
-                        loginNotifier.login();
+                        final success = await loginNotifier.login(); // Esperar el resultado del login
+                        
+                        // Si el login es exitoso, forzar la navegación a la raíz.
+                        // GoRouter tomará este cambio de ruta, verá que AuthStatus es authenticated,
+                        // y el Redirect lo enviará a /applicant o /company según el rol, o eso espero.
+                        if (success && context.mounted) {
+                            context.go('/'); 
+                        }
                       },
                 child: loginState.isLoading
                     ? const SizedBox(
