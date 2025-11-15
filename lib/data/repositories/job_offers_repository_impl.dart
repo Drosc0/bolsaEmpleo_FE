@@ -1,0 +1,136 @@
+import 'package:dio/dio.dart';
+import '../../domain/repositories/job_offers_repository.dart';
+import '../../application/applicant/user_home_view_model.dart' as applicant_models;
+import '../../application/company/company_home_view_model.dart' as company_models;
+import '../../domain/models/applicant_model.dart';
+import '../../domain/models/job_application.dart';
+import '../../infrastructure/services/job_offers_api_service.dart';
+
+class JobOffersRepositoryImpl implements JobOffersRepository {
+  final JobOffersApiService _apiService;
+
+  JobOffersRepositoryImpl(this._apiService);
+
+  // -----------------------------
+  // A. Métodos para el Aspirante
+  // ------------------------------
+  
+  @override
+  Future<List<applicant_models.JobOffer>> fetchRecommendedOffers(String userId) async {
+    try {
+      final dtos = await _apiService.getRecommendedOffers(userId);
+      
+      return dtos.map((dto) => applicant_models.JobOffer(
+        id: dto.id,
+        title: dto.title,
+        company: dto.company,
+        location: dto.location,
+        contractType: dto.contractType,
+        minSalary: dto.minSalary,
+        maxSalary: dto.maxSalary,
+        description: dto.description,
+        postedDate: DateTime.parse(dto.postedDate),
+      )).toList();
+      
+    } catch (e) {
+      throw Exception('Error al obtener ofertas recomendadas: $e');
+    }
+  }
+  
+  @override
+  Future<List<JobApplication>> fetchAppliedOffers(String userId) async {
+    try {
+      final dtos = await _apiService.getAppliedOffers(userId);
+      
+      return dtos.map((dto) => JobApplication(
+        id: dto.id,
+        jobOfferId: dto.jobOfferId,
+        applicantId: userId,
+        status: JobApplication.statusFromString(dto.status),
+        appliedAt: DateTime.parse(dto.appliedAt),
+      )).toList();
+      
+    } catch (e) {
+      throw Exception('Error al obtener postulaciones: $e');
+    }
+  }
+
+  // --------------------------
+  // B. Métodos para la Empresa
+  // --------------------------
+  
+  @override
+  Future<List<company_models.PostedJobOffer>> fetchPostedOffers(String companyId) async {
+    try {
+      final dtos = await _apiService.getPostedOffers(companyId);
+      
+      return dtos.map((dto) => company_models.PostedJobOffer(
+        id: dto.id,
+        title: dto.title,
+        totalApplications: dto.totalApplications,
+        newApplications: dto.newApplications,
+      )).toList();
+      
+    } catch (e) {
+      throw Exception('Error al obtener ofertas publicadas: $e');
+    }
+  }
+
+  @override
+  Future<void> createJobOffer({
+    required String companyId,
+    required String title,
+    required String description,
+    required String location,
+    required String contractType,
+    required int minSalary,
+    required int maxSalary,
+  }) async {
+    try {
+      await _apiService.createJobOffer(
+        companyId: companyId,
+        title: title,
+        description: description,
+        location: location,
+        contractType: contractType,
+        minSalary: minSalary,
+        maxSalary: maxSalary,
+      );
+    } catch (e) {
+      throw Exception('Fallo al publicar la oferta: $e');
+    }
+  }
+
+  @override
+  Future<List<ApplicantModel>> fetchApplicantsForOffer(String jobOfferId) async {
+    try {
+      final List<ApplicantDetailDto> dtos = await _apiService.getApplicantsByOffer(jobOfferId);
+
+      return dtos.map((dto) => ApplicantModel(
+        id: dto.applicantId,
+        name: dto.name,
+        email: dto.email,
+        status: dto.applicationStatus,
+        appliedAt: DateTime.parse(dto.appliedAt),
+      )).toList();
+      
+    } catch (e) {
+      throw Exception('Error al obtener postulantes para la oferta $jobOfferId: $e');
+    }
+  }
+  
+  @override
+  Future<void> updateApplicationStatus({
+    required String applicationId,
+    required String newStatus,
+  }) async {
+    try {
+      await _apiService.updateApplicationStatus(
+        applicationId: applicationId,
+        newStatus: newStatus,
+      );
+    } catch (e) {
+      throw Exception('Error al actualizar el estado de la postulación: $e');
+    }
+  }
+}
