@@ -42,5 +42,6 @@ class JobApplicationRepository {
 // --------------------------------------------------------------------------
 
 final jobApplicationRepositoryProvider = Provider<JobApplicationRepository>((ref) {
-  ref.watch(jobApplicationApiServiceProvider);
+  final apiService = ref.watch(jobApplicationApiServiceProvider);
+  return JobApplicationRepository(apiService);
 });

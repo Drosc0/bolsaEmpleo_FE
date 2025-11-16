@@ -51,6 +51,28 @@ class JobApplication extends Equatable {
   }
 
   // -------------------------------------------------
+  // Método estático para convertir un string en un estado válido
+  // -------------------------------------------------
+  static String statusFromString(String rawStatus) {
+    final normalized = rawStatus.trim().toLowerCase();
+
+    switch (normalized) {
+      case 'enviada':
+        return 'Enviada';
+      case 'revisada':
+        return 'Revisada';
+      case 'entrevista':
+        return 'Entrevista';
+      case 'aceptada':
+        return 'Aceptada';
+      case 'rechazada':
+        return 'Rechazada';
+      default:
+        return 'Desconocido';
+    }
+  }
+
+  // -------------------------------------------------
   // copyWith (inmutabilidad)
   // -------------------------------------------------
   JobApplication copyWith({

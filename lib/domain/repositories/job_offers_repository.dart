@@ -48,8 +48,10 @@ class JobOffersRepository {
         id: dto.id,
         jobOfferId: dto.jobOfferId,
         applicantId: userId,
+        jobTitle: dto.jobTitle,
+        companyName: dto.companyName,
         status: JobApplication.statusFromString(dto.status),
-        appliedAt: DateTime.parse(dto.appliedAt),
+        appliedAt: DateTime.parse(dto.appliedAt), 
       )).toList();
       
     } catch (e) {

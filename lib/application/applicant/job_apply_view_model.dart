@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bolsa_empleo/domain/repositories/job_application_repository.dart'; // Tu repositorio
-import 'job_apply_state.dart'; // El estado que acabamos de crear
+import 'package:bolsa_empleo/domain/repositories/job_application_repository.dart';
+import 'job_apply_state.dart'; 
 
 class JobApplyViewModel extends StateNotifier<JobApplyState> {
   final JobApplicationRepository _repository;
@@ -15,8 +15,12 @@ class JobApplyViewModel extends StateNotifier<JobApplyState> {
     state = state.copyWith(status: ApplicationActionStatus.submitting, errorMessage: null);
 
     try {
-      // 2. Llamar al repositorio
-      final newApplication = await _repository.applyForJob(_applicantId, jobOfferId);
+      // 2. Llamar al repositorio 
+      final newApplication = await _repository.applyForJob(
+        applicantId: _applicantId,
+        jobOfferId: jobOfferId,
+      );
+
 
       // 3. Postulación exitosa
       state = state.copyWith(
