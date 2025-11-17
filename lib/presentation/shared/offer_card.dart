@@ -1,5 +1,5 @@
+import 'package:bolsa_empleo/data/models/job_offer_model.dart';
 import 'package:flutter/material.dart';
-import 'package:recruitment_platform/data/models/job_offer_model.dart'; // Ajusta la ruta
 
 class OfferCard extends StatelessWidget {
   final JobOffer offer;
@@ -13,7 +13,7 @@ class OfferCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         onTap: () {
-          // TODO: Navegar a la página de detalles de la oferta
+          //Navegar a la página de detalles de la oferta
           print('Ver detalles de la oferta ID: ${offer.id}');
         },
         child: Padding(

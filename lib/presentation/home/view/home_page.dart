@@ -1,27 +1,45 @@
+import 'package:bolsa_empleo/presentation/auth/viewmodel/auth_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../viewmodel/home_view_model.dart';
-import '../../shared/offer_card.dart'; // Widget OfferCard a crear
+import '../../shared/offer_card.dart'; 
+import '../../../data/models/stats_model.dart';
+import '../../auth/view/login_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // El AuthViewModel nos dirá si debemos mostrar el botón de Login/Registro.
+    final authViewModel = Provider.of<AuthViewModel>(context); 
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Plataforma de Reclutamiento'),
         centerTitle: false,
+        actions: authViewModel.isLoggedIn
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    authViewModel.logout();
+                  },
+                  tooltip: 'Cerrar Sesión',
+                ),
+              ]
+            : null, // No muestra acciones si no está logueado
       ),
       body: Consumer<HomeViewModel>(
-        builder: (context, viewModel, child) {
-          switch (viewModel.state) {
+        builder: (context, homeViewModel, child) {
+          switch (homeViewModel.state) {
             case ViewState.loading:
               return const Center(child: CircularProgressIndicator());
             case ViewState.error:
-              return Center(child: Text('Error: ${viewModel.errorMessage}'));
+              return Center(child: Text('Error: ${homeViewModel.errorMessage}'));
             case ViewState.loaded:
-              return _buildResponsiveLayout(context, viewModel);
+              return _buildResponsiveLayout(context, homeViewModel, authViewModel.isLoggedIn);
             default:
               return const Center(child: Text('Cargando...'));
           }
@@ -34,22 +52,22 @@ class HomePage extends StatelessWidget {
   Widget _buildResponsiveLayout(
     BuildContext context,
     HomeViewModel viewModel,
+    bool isLoggedIn,
   ) {
-    // Media Query para determinar el ancho de la pantalla
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Define el punto de quiebre para el layout de dos columnas (Tablet/Web)
     if (screenWidth < 600) {
       // 1. MÓVIL (Una sola columna vertical)
-      return _MobileLayout(viewModel: viewModel);
+      return _MobileLayout(viewModel: viewModel, isLoggedIn: isLoggedIn);
     } else {
       // 2. TABLET/WEB (Layout de dos columnas)
-      // Ajusta la cantidad de ofertas por fila
+      // crossAxisCount: 2 (Tablet) o 4 (Web)
       final crossAxisCount = screenWidth > 900 ? 4 : 2; 
 
       return _TabletWebLayout(
         viewModel: viewModel,
         crossAxisCount: crossAxisCount,
+        isLoggedIn: isLoggedIn,
       );
     }
   }
@@ -61,7 +79,8 @@ class HomePage extends StatelessWidget {
 
 class _MobileLayout extends StatelessWidget {
   final HomeViewModel viewModel;
-  const _MobileLayout({required this.viewModel});
+  final bool isLoggedIn;
+  const _MobileLayout({required this.viewModel, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +90,7 @@ class _MobileLayout extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // 1. Estadísticas y Enlace (Ocupa todo el ancho)
-          _StatsAndAuthSection(stats: viewModel.stats),
+          _StatsAndAuthSection(stats: viewModel.stats, isLoggedIn: isLoggedIn),
           const SizedBox(height: 24),
           
           // 2. Título de Ofertas
@@ -105,11 +124,13 @@ class _MobileLayout extends StatelessWidget {
 
 class _TabletWebLayout extends StatelessWidget {
   final HomeViewModel viewModel;
-  final int crossAxisCount; // 2 para Tablet, 4 para Web
+  final int crossAxisCount; 
+  final bool isLoggedIn;
 
   const _TabletWebLayout({
     required this.viewModel,
     required this.crossAxisCount,
+    required this.isLoggedIn,
   });
 
   @override
@@ -127,7 +148,7 @@ class _TabletWebLayout extends StatelessWidget {
               right: BorderSide(color: Theme.of(context).dividerColor),
             ),
           ),
-          child: _StatsAndAuthSection(stats: viewModel.stats),
+          child: _StatsAndAuthSection(stats: viewModel.stats, isLoggedIn: isLoggedIn),
         ),
 
         // COLUMNA 2/3 (Ofertas)
@@ -152,7 +173,7 @@ class _TabletWebLayout extends StatelessWidget {
                     crossAxisCount: crossAxisCount, 
                     crossAxisSpacing: 20.0,
                     mainAxisSpacing: 20.0,
-                    childAspectRatio: 3 / 2, // Ajusta la relación de aspecto de la tarjeta
+                    childAspectRatio: 3 / 2, 
                   ),
                   itemBuilder: (context, index) {
                     return OfferCard(offer: viewModel.offers[index]);
@@ -173,7 +194,9 @@ class _TabletWebLayout extends StatelessWidget {
 
 class _StatsAndAuthSection extends StatelessWidget {
   final AppStats? stats;
-  const _StatsAndAuthSection({this.stats});
+  final bool isLoggedIn;
+  
+  const _StatsAndAuthSection({this.stats, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -201,20 +224,32 @@ class _StatsAndAuthSection extends StatelessWidget {
         
         const SizedBox(height: 20),
         
-        // Enlace para Loguearse/Registrarse
-        ElevatedButton.icon(
-          onPressed: () {
-            // TODO: Navegar a la página de Login
-            print('Navegar a Login');
-          },
-          icon: const Icon(Icons.login),
-          label: const Text('Iniciar Sesión / Registrarse', style: TextStyle(fontSize: 16)),
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            foregroundColor: Theme.of(context).colorScheme.onSecondary,
+        // Enlace para Loguearse/Registrarse (SOLO SI NO ESTÁ LOGUEADO)
+        if (!isLoggedIn)
+          ElevatedButton.icon(
+            onPressed: () {
+              // Navegar a la página de Login
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            },
+            icon: const Icon(Icons.login),
+            label: const Text('Iniciar Sesión / Registrarse', style: TextStyle(fontSize: 16)),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              foregroundColor: Theme.of(context).colorScheme.onSecondary,
+            ),
           ),
-        ),
+        
+        // Mensaje si está logueado
+        if (isLoggedIn)
+          Text(
+            '¡Bienvenido de nuevo! Usa el menú superior para acceder a tu dashboard.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
       ],
     );
   }
