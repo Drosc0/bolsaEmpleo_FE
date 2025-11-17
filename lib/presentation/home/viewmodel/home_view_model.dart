@@ -1,7 +1,7 @@
+import 'package:bolsa_empleo/data/models/job_offer_model.dart';
+import 'package:bolsa_empleo/data/repositories/recruitment_repository.dart';
 import 'package:flutter/material.dart';
-import '../../data/models/job_offer_model.dart';
-import '../../data/models/stats_model.dart';
-import '../../data/repositories/recruitment_repository.dart';
+import '../../../data/models/stats_model.dart';
 
 enum ViewState { initial, loading, loaded, error }
 
@@ -28,16 +28,17 @@ class HomeViewModel extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     
-    try {
-      // Nota: Idealmente, el backend tendría un endpoint /stats y /offers
-      // Simulamos la carga de ambos
+   try {
+      // 1. Obtener ofertas REALES
       _offers = await repository.getLatestJobOffers();
-      // Temporalmente, simulamos las estadísticas hasta crear el endpoint:
-      _stats = AppStats(totalUsers: 150, aspirants: 120, companies: 30);
+      
+      // 2. Obtener estadísticas REALES
+      _stats = await repository.getAppStats(); 
       
       _state = ViewState.loaded;
     } catch (e) {
-      _errorMessage = 'Fallo al cargar datos: ${e.toString()}';
+      // Ahora este error capturará problemas reales de conexión o del backend
+      _errorMessage = 'Fallo al cargar datos del backend: ${e.toString()}';
       _state = ViewState.error;
       print('Error en HomeViewModel: $e');
     }
