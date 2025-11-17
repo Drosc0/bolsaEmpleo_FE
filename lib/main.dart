@@ -1,40 +1,43 @@
-import 'package:bolsa_empleo/config/theme/app_theme.dart';
-import 'package:bolsa_empleo/config/theme/theme_provider.dart';
-import 'package:bolsa_empleo/config/router/app_router.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
+
+import 'core/app_theme.dart';
+import 'presentation/home/view/home_page.dart';
+import 'presentation/home/viewmodel/home_view_model.dart';
+import 'data/repositories/recruitment_repository.dart';
+import 'core/services/api_service.dart';
 
 void main() {
-  // Crucial para leer SecureStorage al inicio
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: MainApp()));
+  // Inicialización de dependencias (Inyección simple)
+  final apiService = ApiService();
+  final repository = RecruitmentRepository(apiService: apiService);
+  
+  runApp(MyApp(repository: repository));
 }
 
-// ----------------------------------------------------------------------
-// WIDGET PRINCIPAL
-// ----------------------------------------------------------------------
-class MainApp extends ConsumerWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  final RecruitmentRepository repository;
+  
+  const MyApp({super.key, required this.repository});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Tema (claro/oscuro)
-    final themeMode = ref.watch(themeProvider);
-
-    // 2. Router con redirección por rol
-    final appRouter = ref.watch(goRouterProvider); // ← Ahora sí existe
-
-    return MaterialApp.router(
-      title: 'JobBoard Pro',
-      debugShowCheckedModeBanner: false,
-
-      // TEMAS
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
-
-      // NAVEGACIÓN
-      routerConfig: appRouter,
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        // Inyectamos el ViewModel de la Home Page
+        ChangeNotifierProvider(
+          create: (_) => HomeViewModel(repository: repository),
+        ),
+        // Otros providers (Auth, Profile, etc.)
+      ],
+      child: MaterialApp(
+        title: 'Recruitment Platform',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme, // Tema Claro por defecto
+        darkTheme: AppTheme.darkTheme, // Tema Oscuro
+        themeMode: ThemeMode.system, // Usa el tema del sistema
+        home: const HomePage(),
+      ),
     );
   }
 }
