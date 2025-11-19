@@ -60,9 +60,15 @@ class HomePage extends StatelessWidget {
       // 1. MÓVIL (Una sola columna vertical)
       return _MobileLayout(viewModel: viewModel, isLoggedIn: isLoggedIn);
     } else {
-      // 2. TABLET/WEB (Layout de dos columnas)
-      // crossAxisCount: 2 (Tablet) o 4 (Web)
-      final crossAxisCount = screenWidth > 900 ? 4 : 2; 
+      // 2. TABLET(Layout de dos columnas)/WEB(Layout de cuatro/seis columnas)
+      int crossAxisCount;
+      if (screenWidth >= 1600) { // pantallas extra grandes
+        crossAxisCount = 6;
+      } else if (screenWidth > 900) { // Web
+        crossAxisCount = 4;
+      } else { // Tablet
+        crossAxisCount = 2;
+      }
 
       return _TabletWebLayout(
         viewModel: viewModel,
