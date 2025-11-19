@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Recruitment Platform',
+        title: 'Plataforma de reclutamiento',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme, 
         darkTheme: AppTheme.darkTheme, 
