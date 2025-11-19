@@ -170,7 +170,7 @@ class _TabletWebLayout extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 
-                // GridView con ofertas (2 o 4 por fila)
+                // GridView con ofertas (2, 4 o 6 por fila)
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -249,7 +249,8 @@ class _StatsAndAuthSection extends StatelessWidget {
             ),
           ),
         
-        // Mensaje si está logueado
+        // Mensaje si está logueado 
+        // hacer un ifelse con !isLoggedIn
         if (isLoggedIn)
           Text(
             '¡Bienvenido de nuevo! Usa el menú superior para acceder a tu dashboard.',
