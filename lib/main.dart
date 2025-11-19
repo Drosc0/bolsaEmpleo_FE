@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
         darkTheme: AppTheme.darkTheme, 
         themeMode: ThemeMode.system, 
         
-        // CORRECCIÓN: Apuntamos directamente a HomePage.
+        // Apuntamos directamente a HomePage.
         home: const HomePage(), 
       ),
     );
