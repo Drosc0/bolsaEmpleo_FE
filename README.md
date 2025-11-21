@@ -31,11 +31,18 @@ El sistema maneja dos tipos de usuarios: **Candidatos** y **Empresas**. Además,
 - `estado`: Puede ser `pendiente`, `aceptado` o `rechazado`.
 - `fecha_aplicacion`: Fecha en que se realizó la aplicación.
 
-## Instalación y configuración
-
-
-### Buenas prácticas
+## Buenas prácticas
 - Usa Riverpod o Provider para gestión de estado.
 - Implementa validaciones en formularios.
 - Maneja errores y estados de carga en las pantallas.
+
+## Próximos pasos
+
+- Añadir internacionalización (i18n) para soportar múltiples idiomas.
+- Implementar notificaciones push para avisar a candidatos y empresas sobre nuevas ofertas o cambios en aplicaciones.
+- Mejorar el diseño utilizando Material 3 y adaptarlo a diferentes tamaños de pantalla.
+- Integrar pruebas unitarias y de integración para asegurar la calidad del código.
+- Configurar CI/CD para despliegue automático en entornos de desarrollo y producción.
+- Añadir soporte para autenticación social (Google, LinkedIn) mediante Supabase.
+- Optimizar el rendimiento y reducir tiempos de carga en dispositivos móviles.
 
