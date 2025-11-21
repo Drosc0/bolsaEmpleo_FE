@@ -19,7 +19,7 @@ class SecureStorageService {
     await _storage.delete(key: _tokenKey);
   }
 
-  // Opcional: Para guardar el ID del usuario
+  // Para guardar el ID del usuario
   Future<void> saveUserId(int userId) async {
     await _storage.write(key: 'user_id', value: userId.toString());
   }

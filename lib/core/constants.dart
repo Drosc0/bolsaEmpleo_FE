@@ -13,7 +13,6 @@ const IOS_URL = 'http://127.0.0.1:$NESTJS_PORT/api';
 // Función Helper para obtener la URL correcta
 String getBaseUrl() {
   // mas adelante devolvera la URL del dominio real
-  
   //return ANDROID_EMULATOR_URL; 
   return WEB_URL;
 }

@@ -14,6 +14,7 @@ class OfferCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           //Navegar a la página de detalles de la oferta
+          //mas adelante eliminar el print
           print('Ver detalles de la oferta ID: ${offer.id}');
         },
         child: Padding(
@@ -50,11 +51,11 @@ class OfferCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
 
-              // Rango Salarial (Destacado)
+              // Rango Salarial
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
+                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.15), //cambiar por .withValues()
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
