@@ -29,7 +29,7 @@ class AppTheme {
         onPrimary: Colors.white,        // Texto sobre el primario (verde)
         onSecondary: Colors.black,      // Texto sobre el secundario (naranja)
       ),
-      // Ajustes específicos para widgets (AppBar, Card, etc.)
+      // Ajustes específicos para widgets 
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -46,7 +46,7 @@ class AppTheme {
   // Secundario: Naranja
 
   static ThemeData get darkTheme {
-    // Base del tema oscuro (Material 3)
+    // Base del tema oscuro 
     final base = ThemeData.dark();
     return base.copyWith(
       colorScheme: base.colorScheme.copyWith(
@@ -58,7 +58,7 @@ class AppTheme {
         onPrimary: Colors.white,
         onSecondary: Colors.black,
       ),
-      // Ajustes específicos para widgets (AppBar, Card, etc.)
+      // Ajustes específicos para widgets 
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: const Color(0xFF1E1E1E),
         foregroundColor: Colors.white,
@@ -67,7 +67,7 @@ class AppTheme {
       floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(
         backgroundColor: accentOrange,
       ),
-      // Ajuste para el color de las tarjetas (Surface Container)
+      // Ajuste para el color de las tarjetas
       cardColor: const Color(0xFF1E1E1E), 
     );
   }

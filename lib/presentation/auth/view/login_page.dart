@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (success) {
         // main.dart maneje la ruta.
-        //eliminar el print mas adelante
+        // eliminar el print mas adelante
         print('Login exitoso! Rol: ${viewModel.userRole}');
       } else {
         // Mostrar SnackBar con el error reportado por el ViewModel

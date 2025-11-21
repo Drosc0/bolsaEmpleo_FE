@@ -10,7 +10,7 @@ class RecruitmentRepository {
 
   // ==========================================================
   // Obtención de Ofertas desde NestJS
-  // Endpoint: GET /api/job-offers/latest (asumiendo que existe)
+  // Endpoint: GET /api/job-offers/latest 
   // ==========================================================
   Future<List<JobOffer>> getLatestJobOffers() async {
     final response = await apiService.get('/job-offers/latest'); 
