@@ -230,7 +230,7 @@ class _StatsAndAuthSection extends StatelessWidget {
         
         const SizedBox(height: 20),
         
-        // Enlace para Loguearse/Registrarse (SOLO SI NO ESTÁ LOGUEADO)
+        // Enlace para Loguearse/Registrarse (SI NO ESTÁ LOGUEADO)
         if (!isLoggedIn)
           ElevatedButton.icon(
             onPressed: () {
@@ -250,7 +250,7 @@ class _StatsAndAuthSection extends StatelessWidget {
           ),
         
         // Mensaje si está logueado 
-        // hacer un ifelse con !isLoggedIn
+        // hacer un ifelse con !isLoggedIn si fuese posible???
         if (isLoggedIn)
           Text(
             '¡Bienvenido de nuevo! Usa el menú superior para acceder a tu dashboard.',

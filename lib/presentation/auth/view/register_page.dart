@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'login_page.dart';
 
-// Roles disponibles (deben coincidir con el backend 'aspirante' y 'empresa')
+// Roles disponibles
 enum UserRoleOption { aspirant, company }
 
 class RegisterPage extends StatefulWidget {
@@ -18,7 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   
-  // Estado para el selector de Rol (por defecto: Aspirante)
+  // Estado para el selector de Rol (defecto: Aspirante)
   UserRoleOption _selectedRole = UserRoleOption.aspirant;
 
   @override
@@ -45,7 +45,6 @@ class _RegisterPageState extends State<RegisterPage> {
           const SnackBar(content: Text('¡Registro exitoso!')),
         );
         // Si el login fue automático, el Consumer en main.dart manejará la navegación.
-        // Aquí podríamos simplemente cerrar la página de registro.
         Navigator.pop(context); 
       } else {
         // Mostrar error del backend
@@ -73,11 +72,11 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // --- 1. SELECCIÓN DE ROL ---
+                  //1. SELECCIÓN DE ROL
                   _buildRoleSelector(),
                   const SizedBox(height: 30),
 
-                  // --- 2. CAMPOS DE FORMULARIO ---
+                  //2. CAMPOS DE FORMULARIO
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -86,7 +85,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value!.isEmpty || !value.contains('@') ? 'Ingrese un email válido' : null,
+                    validator: (value) => value!.isEmpty || !value.contains('@') ? 'Introduzca un email válido' : null,
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -101,7 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // --- 3. BOTÓN DE REGISTRO ---
+                  //3. BOTÓN DE REGISTRO
                   ElevatedButton(
                     onPressed: isAuthenticating ? null : () => _submit(viewModel),
                     style: ElevatedButton.styleFrom(
@@ -113,7 +112,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- 4. ENLACE A LOGIN ---
+                  //4. ENLACE A LOGIN
                   TextButton(
                     onPressed: () {
                       // Vuelve a la página de Login

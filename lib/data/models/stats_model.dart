@@ -9,7 +9,7 @@ class AppStats {
     required this.companies,
   });
   
-  // Asumimos un endpoint para /stats que devuelve estas claves
+  // endpoint para /stats que devuelve estas claves 
   factory AppStats.fromJson(Map<String, dynamic> json) {
     return AppStats(
       totalUsers: json['totalUsers'] as int,

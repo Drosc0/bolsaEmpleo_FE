@@ -36,9 +36,8 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (success) {
-        // La navegación al Dashboard/Home la maneja el Consumer en main.dart.
-        // Solo cerramos la página actual si hubiera algo debajo (ej. si venimos de Home).
-        // En este caso, no hacemos nada para dejar que main.dart maneje la ruta.
+        // main.dart maneje la ruta.
+        //eliminar el print mas adelante
         print('Login exitoso! Rol: ${viewModel.userRole}');
       } else {
         // Mostrar SnackBar con el error reportado por el ViewModel
