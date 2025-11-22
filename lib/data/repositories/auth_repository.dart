@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../models/user_tokens_model.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/secure_storage_service.dart';
@@ -14,18 +15,16 @@ class AuthRepository {
   Future<UserTokens> login(String email, String password) async {
     final response = await apiService.post(
       '/auth/login', // Endpoint: POST /api/auth/login
-      {
-        'email': email,
-        'password': password,
-      },
+      {'email': email, 'password': password},
     );
 
-    final tokens = UserTokens.fromJson(response.body as Map<String, dynamic>);
-    
+    final Map<String, dynamic> json = jsonDecode(response.body);
+    final tokens = UserTokens.fromJson(json);
+
     // Almacenar el token y el ID al loguearse con éxito
     await storageService.saveToken(tokens.accessToken);
     await storageService.saveUserId(tokens.userId);
-    
+
     return tokens;
   }
 
@@ -33,21 +32,18 @@ class AuthRepository {
   // LÓGICA DE REGISTRO
   // ==========================================================
   Future<UserTokens> register(
-    String email, 
-    String password, 
+    String email,
+    String password,
     String role, // 'aspirante' o 'empresa'
   ) async {
     final response = await apiService.post(
       '/auth/register', // Endpoint: POST /api/auth/register
-      {
-        'email': email,
-        'password': password,
-        'role': role,
-      },
+      {'email': email, 'password': password, 'role': role},
     );
 
-    final tokens = UserTokens.fromJson(response.body as Map<String, dynamic>);
-    
+    final Map<String, dynamic> json = jsonDecode(response.body);
+    final tokens = UserTokens.fromJson(json);
+
     // Almacenar el token y el ID al registrarse con éxito
     await storageService.saveToken(tokens.accessToken);
     await storageService.saveUserId(tokens.userId);
@@ -68,6 +64,6 @@ class AuthRepository {
   Future<bool> isAuthenticated() async {
     final token = await storageService.readToken();
     // En una aplicación real, se debería validar la expiración del token aquí.
-    return token != null; 
+    return token != null;
   }
 }

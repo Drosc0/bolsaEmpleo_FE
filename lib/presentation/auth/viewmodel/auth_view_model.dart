@@ -3,7 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../../data/repositories/auth_repository.dart';
 
-enum AuthStatus { initial, authenticating, authenticated, unauthenticated, error }
+enum AuthStatus {
+  initial,
+  authenticating,
+  authenticated,
+  unauthenticated,
+  error,
+}
 
 class AuthViewModel extends ChangeNotifier {
   final AuthRepository repository;
@@ -27,11 +33,13 @@ class AuthViewModel extends ChangeNotifier {
   // ==========================================================
   Future<void> checkAuthStatus() async {
     final isAuthenticated = await repository.isAuthenticated();
-    _status = isAuthenticated ? AuthStatus.authenticated : AuthStatus.unauthenticated;
-    
-    // Opcional: Si está logueado, podríamos intentar leer el rol guardado 
+    _status = isAuthenticated
+        ? AuthStatus.authenticated
+        : AuthStatus.unauthenticated;
+
+    // Opcional: Si está logueado, podríamos intentar leer el rol guardado
     // (requiere que lo guardemos en el storage junto al token).
-    // Por ahora, lo dejaremos simple 
+    // Por ahora, lo dejaremos simple
 
     notifyListeners();
   }
@@ -46,7 +54,7 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       final tokens = await repository.login(email, password);
-      
+
       _userRole = tokens.userRole;
       _status = AuthStatus.authenticated;
       notifyListeners();
@@ -57,7 +65,8 @@ class AuthViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = 'Ocurrió un error inesperado.';
+      print('ERROR LOGIN: $e'); // LOG PARA DEBUG
+      _errorMessage = 'Ocurrió un error inesperado: $e';
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;
@@ -81,10 +90,10 @@ class AuthViewModel extends ChangeNotifier {
     _status = AuthStatus.authenticating;
     _errorMessage = null;
     notifyListeners();
-    
+
     try {
       final tokens = await repository.register(email, password, role);
-      
+
       _userRole = tokens.userRole;
       _status = AuthStatus.authenticated;
       notifyListeners();
@@ -95,7 +104,8 @@ class AuthViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _errorMessage = 'Ocurrió un error inesperado durante el registro.';
+      print('ERROR REGISTRO: $e'); // LOG PARA DEBUG
+      _errorMessage = 'Ocurrió un error inesperado durante el registro: $e';
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;
