@@ -28,6 +28,19 @@ class ApplicantDashboardViewModel extends ChangeNotifier {
   List<Application> get applications => _applications;
   String? get errorMessage => _errorMessage;
 
+  Future<void> updateProfile(Map<String, dynamic> profileData) async {
+    try {
+      final updatedProfile = await profileRepository.updateProfile(profileData);
+      _profile = updatedProfile;
+      notifyListeners();
+    } catch (e) {
+      print('ERROR UPDATING PROFILE: $e');
+      _errorMessage = 'Error al actualizar perfil: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   Future<void> fetchDashboardData() async {
     _state = DashboardState.loading;
     _errorMessage = null;

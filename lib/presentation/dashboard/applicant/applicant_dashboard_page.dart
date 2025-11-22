@@ -5,6 +5,7 @@ import '../../../data/repositories/profile_repository.dart';
 import '../../../data/repositories/applications_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
+import 'widgets/edit_applicant_profile_dialog.dart';
 
 class ApplicantDashboardPage extends StatelessWidget {
   const ApplicantDashboardPage({super.key});
@@ -59,34 +60,82 @@ class _ApplicantDashboardContent extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: Container(
-                    color: Colors.blue[50],
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(24.0),
+                    color: Theme.of(context).colorScheme.surface,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Mi Perfil',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 20),
-                        if (viewModel.profile != null) ...[
-                          Text('Nombre: ${viewModel.profile!.fullName}'),
-                          if (viewModel.profile!.phone != null)
-                            Text('Teléfono: ${viewModel.profile!.phone}'),
-                          if (viewModel.profile!.linkedinUrl != null)
-                            Text('LinkedIn: ${viewModel.profile!.linkedinUrl}'),
-                          if (viewModel.profile!.portfolioUrl != null)
-                            Text(
-                              'Portfolio: ${viewModel.profile!.portfolioUrl}',
+                        Center(
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer,
+                            child: Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Text(
+                            viewModel.profile?.fullName ?? 'Usuario',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        if (viewModel.profile != null) ...[
+                          _ProfileInfoRow(
+                            icon: Icons.email,
+                            label: 'Email',
+                            value: viewModel.profile?.email ?? 'No disponible',
+                          ),
+                          const SizedBox(height: 12),
+                          _ProfileInfoRow(
+                            icon: Icons.phone,
+                            label: 'Teléfono',
+                            value: viewModel.profile?.phone ?? 'No disponible',
+                          ),
+                          const SizedBox(height: 12),
+                          _ProfileInfoRow(
+                            icon: Icons.link,
+                            label: 'LinkedIn',
+                            value:
+                                viewModel.profile?.linkedinUrl ??
+                                'No disponible',
+                          ),
+                          const SizedBox(height: 12),
+                          _ProfileInfoRow(
+                            icon: Icons.work,
+                            label: 'Portfolio',
+                            value:
+                                viewModel.profile?.portfolioUrl ??
+                                'No disponible',
+                          ),
                         ] else
                           const Text('No se encontró perfil'),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            //Navegar a editar perfil
-                          },
-                          child: const Text('Modificar Datos'),
+                        const Spacer(),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    EditApplicantProfileDialog(
+                                      profile: viewModel.profile!,
+                                    ),
+                              );
+                            },
+                            icon: const Icon(Icons.edit),
+                            label: const Text('Modificar Datos'),
+                          ),
                         ),
                       ],
                     ),
@@ -94,9 +143,9 @@ class _ApplicantDashboardContent extends StatelessWidget {
                 ),
                 const VerticalDivider(width: 1),
 
-                // COLUMNA 2: Ofertas Aplicadas
+                // COLUMNA 2: Ofertas Aplicadas (Mayor tamaño)
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: Container(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -143,20 +192,23 @@ class _ApplicantDashboardContent extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: Container(
-                    color: Colors.orange[50],
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Sugerencias para ti',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          'Sugerencias',
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 20),
                         const Expanded(
                           child: Center(
                             child: Text(
-                              'No hay sugerencias disponibles por el momento.',
+                              'No hay sugerencias disponibles.',
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
@@ -166,6 +218,45 @@ class _ApplicantDashboardContent extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _ProfileInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _ProfileInfoRow({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.secondary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(value, style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

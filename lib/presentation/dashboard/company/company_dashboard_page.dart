@@ -54,43 +54,74 @@ class _CompanyDashboardContent extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: Container(
-                    color: Colors.blue[50],
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(24.0),
+                    color: Theme.of(context).colorScheme.surface,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Perfil de Empresa',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 20),
-                        if (viewModel.companyProfile != null) ...[
-                          Text(
-                            'Empresa: ${viewModel.companyProfile!.companyName}',
+                        Center(
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer,
+                            child: Icon(
+                              Icons.business,
+                              size: 40,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
-                          if (viewModel.companyProfile!.description != null)
-                            Text(
-                              'Descripción: ${viewModel.companyProfile!.description}',
-                            ),
-                          if (viewModel.companyProfile!.website != null)
-                            Text('Web: ${viewModel.companyProfile!.website}'),
-                          if (viewModel.companyProfile!.location != null)
-                            Text(
-                              'Ubicación: ${viewModel.companyProfile!.location}',
-                            ),
-                        ] else
-                          const Text('No se encontró perfil de empresa'),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => EditCompanyProfileDialog(
-                                profile: viewModel.companyProfile!,
-                              ),
-                            );
-                          },
-                          child: const Text('Modificar Datos'),
+                        ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Text(
+                            viewModel.companyProfile?.companyName ?? 'Empresa',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        _ProfileInfoRow(
+                          icon: Icons.description,
+                          label: 'Descripción',
+                          value:
+                              viewModel.companyProfile?.description ??
+                              'Sin descripción',
+                        ),
+                        const SizedBox(height: 12),
+                        _ProfileInfoRow(
+                          icon: Icons.language,
+                          label: 'Sitio Web',
+                          value:
+                              viewModel.companyProfile?.website ??
+                              'No especificado',
+                        ),
+                        const SizedBox(height: 12),
+                        _ProfileInfoRow(
+                          icon: Icons.location_on,
+                          label: 'Ubicación',
+                          value:
+                              viewModel.companyProfile?.location ??
+                              'No especificada',
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => EditCompanyProfileDialog(
+                                  profile: viewModel.companyProfile!,
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.edit),
+                            label: const Text('Modificar Datos'),
+                          ),
                         ),
                       ],
                     ),
@@ -230,7 +261,6 @@ class _CreateOfferFormState extends State<_CreateOfferForm> {
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   final _salaryController = TextEditingController();
-  String _contractType = 'Tiempo completo';
 
   @override
   void dispose() {
@@ -252,7 +282,6 @@ class _CreateOfferFormState extends State<_CreateOfferForm> {
         'description': _descriptionController.text.trim(),
         'location': _locationController.text.trim(),
         'salaryRange': _salaryController.text.trim(),
-        'contractType': _contractType,
       });
 
       // Clear form on success
@@ -284,72 +313,60 @@ class _CreateOfferFormState extends State<_CreateOfferForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Nueva Oferta', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _titleController,
               decoration: const InputDecoration(
                 labelText: 'Título',
                 border: OutlineInputBorder(),
+                isDense: true,
               ),
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Campo requerido' : null,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _descriptionController,
               decoration: const InputDecoration(
                 labelText: 'Descripción',
                 border: OutlineInputBorder(),
+                isDense: true,
               ),
-              maxLines: 3,
+              maxLines: 2,
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Campo requerido' : null,
             ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _locationController,
-              decoration: const InputDecoration(
-                labelText: 'Ubicación',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Campo requerido' : null,
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _salaryController,
-              decoration: const InputDecoration(
-                labelText: 'Rango Salarial',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Campo requerido' : null,
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              value: _contractType,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de contrato',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'jornada completa',
-                  child: Text('jornada completa'),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _locationController,
+                    decoration: const InputDecoration(
+                      labelText: 'Ubicación',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Campo requerido' : null,
+                  ),
                 ),
-                DropdownMenuItem(
-                  value: 'Media jornada',
-                  child: Text('Media jornada'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _salaryController,
+                    decoration: const InputDecoration(
+                      labelText: 'Salario',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Campo requerido' : null,
+                  ),
                 ),
-                DropdownMenuItem(value: 'Freelance', child: Text('Freelance')),
               ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _contractType = value);
-                }
-              },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -360,6 +377,45 @@ class _CreateOfferFormState extends State<_CreateOfferForm> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ProfileInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _ProfileInfoRow({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.secondary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(value, style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

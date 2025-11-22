@@ -4,6 +4,7 @@ class CompanyProfile {
   final String? description;
   final String? website;
   final String? location;
+  final String? email;
 
   CompanyProfile({
     required this.id,
@@ -11,6 +12,7 @@ class CompanyProfile {
     this.description,
     this.website,
     this.location,
+    this.email,
   });
 
   factory CompanyProfile.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class CompanyProfile {
       description: json['description'] as String?,
       website: json['website'] as String?,
       location: json['location'] as String?,
+      email: json['email'] as String?,
     );
   }
 }
