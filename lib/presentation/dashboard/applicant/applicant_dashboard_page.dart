@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'applicant_dashboard_view_model.dart';
+import 'viewmodel/applicant_dashboard_view_model.dart';
 import '../../../data/repositories/profile_repository.dart';
 import '../../../data/repositories/applications_repository.dart';
 import '../../../core/services/api_service.dart';
@@ -27,6 +27,7 @@ class ApplicantDashboardPage extends StatelessWidget {
   }
 }
 
+// StatelessWidget que contiene la lógica de la pantalla
 class _ApplicantDashboardContent extends StatelessWidget {
   const _ApplicantDashboardContent();
 
@@ -83,7 +84,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
-                            // TODO: Navegar a editar perfil
+                            //Navegar a editar perfil
                           },
                           child: const Text('Modificar Datos'),
                         ),

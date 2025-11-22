@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'company_dashboard_view_model.dart';
+import 'viewmodel/company_dashboard_view_model.dart';
 import '../../../data/repositories/company_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
+import 'widgets/edit_company_profile_dialog.dart';
 
 class CompanyDashboardPage extends StatelessWidget {
   const CompanyDashboardPage({super.key});
@@ -82,7 +83,12 @@ class _CompanyDashboardContent extends StatelessWidget {
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
-                            // TODO: Navegar a editar perfil
+                            showDialog(
+                              context: context,
+                              builder: (context) => EditCompanyProfileDialog(
+                                profile: viewModel.companyProfile!,
+                              ),
+                            );
                           },
                           child: const Text('Modificar Datos'),
                         ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../data/repositories/profile_repository.dart';
-import '../../../data/repositories/applications_repository.dart';
-import '../../../data/models/profile_model.dart';
-import '../../../data/models/application_model.dart';
+import '../../../../data/repositories/profile_repository.dart';
+import '../../../../data/repositories/applications_repository.dart';
+import '../../../../data/models/profile_model.dart';
+import '../../../../data/models/application_model.dart';
 
 enum DashboardState { loading, loaded, error }
 

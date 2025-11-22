@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../data/repositories/company_repository.dart';
-import '../../../data/models/company_profile_model.dart';
-import '../../../data/models/job_offer_model.dart';
+import '../../../../data/repositories/company_repository.dart';
+import '../../../../data/models/company_profile_model.dart';
+import '../../../../data/models/job_offer_model.dart';
 
 enum DashboardState { loading, loaded, error }
 
@@ -55,6 +55,21 @@ class CompanyDashboardViewModel extends ChangeNotifier {
     } catch (e) {
       print('ERROR CREATING OFFER: $e');
       _errorMessage = 'Error al crear oferta: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> updateCompanyProfile(Map<String, dynamic> profileData) async {
+    try {
+      final updatedProfile = await companyRepository.updateCompanyProfile(
+        profileData,
+      );
+      _companyProfile = updatedProfile;
+      notifyListeners();
+    } catch (e) {
+      print('ERROR UPDATING PROFILE: $e');
+      _errorMessage = 'Error al actualizar perfil: $e';
       notifyListeners();
       rethrow;
     }
