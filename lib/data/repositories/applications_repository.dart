@@ -31,26 +31,13 @@ class ApplicationsRepository {
   Future<void> applyToJob(int offerId) async {
     final token = await storageService.readToken();
 
-    // La API espera el offerId en la URL o query param, no en el body si da error de propiedad.
-    // Probamos con /recruitment/applications/{offerId} o similar.
-    // Si el error es "property offerId should not exist", es probable que el DTO no tenga ese campo.
-    // Asumimos que el endpoint correcto es POST /recruitment/applications con offerId como query param
-    // O tal vez POST /recruitment/offers/{id}/apply
+    // Intento 3: Volver a POST /recruitment/applications pero con 'jobId' en el body.
+    // El error original fue "property offerId should not exist", lo que sugiere que el DTO
+    // no tiene 'offerId'. Es muy probable que se llame 'jobId' o 'jobOfferId'.
+    // Probaremos con 'jobId' que es lo más estándar.
 
-    // Intentemos POST /recruitment/applications?offerId={id}
-    // O POST /recruitment/applications/{id}
-
-    // Dado que el usuario no dio docs, y el error es de validación de propiedad en body,
-    // voy a intentar pasarlo como query param si el endpoint es genérico,
-    // o en el path si es específico.
-
-    // Voy a probar: POST /recruitment/applications/{offerId}
-    // Si falla, el usuario nos lo dirá.
-
-    await apiService.post(
-      '/recruitment/applications/$offerId',
-      {},
-      token: token,
-    );
+    await apiService.post('/recruitment/applications', {
+      'jobId': offerId,
+    }, token: token);
   }
 }

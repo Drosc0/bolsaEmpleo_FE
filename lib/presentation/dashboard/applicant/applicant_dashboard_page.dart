@@ -312,17 +312,6 @@ class _ApplicantDashboardContent extends StatelessWidget {
                                         .toList(),
                                   ),
                           ),
-                          const Divider(),
-                          // Fila 3: Sugerencias
-                          Text(
-                            'Sugerencias',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          const Expanded(
-                            flex: 1,
-                            child: Center(child: Text('No hay sugerencias.')),
-                          ),
                         ],
                       ),
                     ),

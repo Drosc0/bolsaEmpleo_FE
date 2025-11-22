@@ -10,7 +10,7 @@ class OfferCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // Elevation and shape are now handled by CardTheme in app_theme.dart
+      // CardTheme esta app_theme.dart
       child: InkWell(
         borderRadius: BorderRadius.circular(16), // Matches CardTheme radius
         onTap: onTap,

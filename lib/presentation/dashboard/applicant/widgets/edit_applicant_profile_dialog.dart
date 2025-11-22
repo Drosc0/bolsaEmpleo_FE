@@ -317,7 +317,7 @@ class _EditApplicantProfileDialogState
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
-                    onPressed: _isLoading ? _saveChanges : null,
+                    onPressed: _isLoading ? null : _saveChanges,
                     child: _isLoading
                         ? const SizedBox(
                             width: 20,
