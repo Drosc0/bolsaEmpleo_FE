@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodel/home_view_model.dart';
-import '../../shared/offer_card.dart'; 
+import '../../shared/offer_card.dart';
 import '../../../data/models/stats_model.dart';
 import '../../auth/view/login_page.dart';
 
@@ -13,8 +13,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // El AuthViewModel nos dirá si debemos mostrar el botón de Login/Registro.
-    final authViewModel = Provider.of<AuthViewModel>(context); 
-    
+    final authViewModel = Provider.of<AuthViewModel>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Plataforma de Reclutamiento'),
@@ -37,9 +37,15 @@ class HomePage extends StatelessWidget {
             case ViewState.loading:
               return const Center(child: CircularProgressIndicator());
             case ViewState.error:
-              return Center(child: Text('Error: ${homeViewModel.errorMessage}'));
+              return Center(
+                child: Text('Error: ${homeViewModel.errorMessage}'),
+              );
             case ViewState.loaded:
-              return _buildResponsiveLayout(context, homeViewModel, authViewModel.isLoggedIn);
+              return _buildResponsiveLayout(
+                context,
+                homeViewModel,
+                authViewModel.isLoggedIn,
+              );
             default:
               return const Center(child: Text('Cargando...'));
           }
@@ -62,11 +68,14 @@ class HomePage extends StatelessWidget {
     } else {
       // 2. TABLET(Layout de dos columnas)/WEB(Layout de cuatro/seis columnas)
       int crossAxisCount;
-      if (screenWidth >= 1600) { // pantallas extra grandes
+      if (screenWidth >= 1600) {
+        // pantallas extra grandes
         crossAxisCount = 6;
-      } else if (screenWidth > 900) { // Web
+      } else if (screenWidth > 900) {
+        // Web
         crossAxisCount = 4;
-      } else { // Tablet
+      } else {
+        // Tablet
         crossAxisCount = 2;
       }
 
@@ -98,26 +107,34 @@ class _MobileLayout extends StatelessWidget {
           // 1. Estadísticas y Enlace (Ocupa todo el ancho)
           _StatsAndAuthSection(stats: viewModel.stats, isLoggedIn: isLoggedIn),
           const SizedBox(height: 24),
-          
+
           // 2. Título de Ofertas
           Text(
             'Últimas Ofertas',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 16),
-          
+
           // 3. Ofertas (Una columna, 1 oferta por 'row')
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: viewModel.offers.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: OfferCard(offer: viewModel.offers[index]),
-              );
-            },
-          ),
+          if (viewModel.offers.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text('No hay ofertas disponibles en este momento.'),
+              ),
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: viewModel.offers.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: OfferCard(offer: viewModel.offers[index]),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -130,7 +147,7 @@ class _MobileLayout extends StatelessWidget {
 
 class _TabletWebLayout extends StatelessWidget {
   final HomeViewModel viewModel;
-  final int crossAxisCount; 
+  final int crossAxisCount;
   final bool isLoggedIn;
 
   const _TabletWebLayout({
@@ -154,7 +171,10 @@ class _TabletWebLayout extends StatelessWidget {
               right: BorderSide(color: Theme.of(context).dividerColor),
             ),
           ),
-          child: _StatsAndAuthSection(stats: viewModel.stats, isLoggedIn: isLoggedIn),
+          child: _StatsAndAuthSection(
+            stats: viewModel.stats,
+            isLoggedIn: isLoggedIn,
+          ),
         ),
 
         // COLUMNA 2/3 (Ofertas)
@@ -169,22 +189,33 @@ class _TabletWebLayout extends StatelessWidget {
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 16),
-                
+
                 // GridView con ofertas (2, 4 o 6 por fila)
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: viewModel.offers.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount, 
-                    crossAxisSpacing: 20.0,
-                    mainAxisSpacing: 20.0,
-                    childAspectRatio: 3 / 2, 
+                if (viewModel.offers.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        'No hay ofertas disponibles en este momento.',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: viewModel.offers.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 20.0,
+                      mainAxisSpacing: 20.0,
+                      childAspectRatio: 3 / 2,
+                    ),
+                    itemBuilder: (context, index) {
+                      return OfferCard(offer: viewModel.offers[index]);
+                    },
                   ),
-                  itemBuilder: (context, index) {
-                    return OfferCard(offer: viewModel.offers[index]);
-                  },
-                ),
               ],
             ),
           ),
@@ -201,7 +232,7 @@ class _TabletWebLayout extends StatelessWidget {
 class _StatsAndAuthSection extends StatelessWidget {
   final AppStats? stats;
   final bool isLoggedIn;
-  
+
   const _StatsAndAuthSection({this.stats, required this.isLoggedIn});
 
   @override
@@ -218,18 +249,24 @@ class _StatsAndAuthSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Estadísticas de la Comunidad', style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Estadísticas de la Comunidad',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const Divider(),
-                _StatRow(label: 'Usuarios Registrados', count: stats!.totalUsers),
+                _StatRow(
+                  label: 'Usuarios Registrados',
+                  count: stats!.totalUsers,
+                ),
                 _StatRow(label: 'Aspirantes', count: stats!.aspirants),
                 _StatRow(label: 'Empresas', count: stats!.companies),
               ],
             ),
           ),
         ),
-        
+
         const SizedBox(height: 20),
-        
+
         // Enlace para Loguearse/Registrarse (SI NO ESTÁ LOGUEADO)
         if (!isLoggedIn)
           ElevatedButton.icon(
@@ -241,15 +278,18 @@ class _StatsAndAuthSection extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.login),
-            label: const Text('Iniciar Sesión / Registrarse', style: TextStyle(fontSize: 16)),
+            label: const Text(
+              'Iniciar Sesión / Registrarse',
+              style: TextStyle(fontSize: 16),
+            ),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
               backgroundColor: Theme.of(context).colorScheme.secondary,
               foregroundColor: Theme.of(context).colorScheme.onSecondary,
             ),
           ),
-        
-        // Mensaje si está logueado 
+
+        // Mensaje si está logueado
         // hacer un ifelse con !isLoggedIn si fuese posible???
         if (isLoggedIn)
           Text(
@@ -276,7 +316,12 @@ class _StatRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: Theme.of(context).textTheme.bodyLarge),
-          Text(count.toString(), style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            count.toString(),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );

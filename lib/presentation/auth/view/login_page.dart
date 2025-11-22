@@ -2,7 +2,9 @@ import 'package:bolsa_empleo/presentation/auth/viewmodel/auth_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'register_page.dart'; 
+import 'register_page.dart';
+import '../../dashboard/applicant/applicant_dashboard_page.dart';
+import '../../dashboard/company/company_dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   void _submit(AuthViewModel viewModel) async {
     // Es importante verificar el contexto para evitar errores si la página se desmonta
     if (!mounted) return;
-    
+
     if (_formKey.currentState!.validate()) {
       bool success = await viewModel.login(
         _emailController.text.trim(),
@@ -39,11 +41,33 @@ class _LoginPageState extends State<LoginPage> {
         // main.dart maneje la ruta.
         // eliminar el print mas adelante
         print('Login exitoso! Rol: ${viewModel.userRole}');
+
+        if (viewModel.userRole == 'aspirante') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ApplicantDashboardPage(),
+            ),
+          );
+        } else if (viewModel.userRole == 'empresa') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CompanyDashboardPage(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: Rol de usuario desconocido')),
+          );
+        }
       } else {
         // Mostrar SnackBar con el error reportado por el ViewModel
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${viewModel.errorMessage ?? "Inténtelo de nuevo"}'),
+            content: Text(
+              'Error: ${viewModel.errorMessage ?? "Inténtelo de nuevo"}',
+            ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -76,7 +100,9 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value!.isEmpty || !value.contains('@') ? 'Ingrese un email válido' : null,
+                    validator: (value) => value!.isEmpty || !value.contains('@')
+                        ? 'Ingrese un email válido'
+                        : null,
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -87,31 +113,45 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(),
                     ),
                     obscureText: true,
-                    validator: (value) => value!.isEmpty ? 'Ingrese su contraseña' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Ingrese su contraseña' : null,
                   ),
                   const SizedBox(height: 30),
                   ElevatedButton(
-                    onPressed: isAuthenticating ? null : () => _submit(viewModel),
+                    onPressed: isAuthenticating
+                        ? null
+                        : () => _submit(viewModel),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: isAuthenticating
-                        ? const Center(child: SizedBox(
-                            height: 20, 
-                            width: 20, 
-                            child: CircularProgressIndicator(strokeWidth: 2.0)
-                          ))
-                        : const Text('Iniciar Sesión', style: TextStyle(fontSize: 18)),
+                        ? const Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                              ),
+                            ),
+                          )
+                        : const Text(
+                            'Iniciar Sesión',
+                            style: TextStyle(fontSize: 18),
+                          ),
                   ),
                   const SizedBox(height: 20),
                   TextButton(
-                    onPressed: isAuthenticating ? null : () {
-                      // Navegar a la página de Registro
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const RegisterPage()),
-                      );
-                    },
+                    onPressed: isAuthenticating
+                        ? null
+                        : () {
+                            // Navegar a la página de Registro
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const RegisterPage(),
+                              ),
+                            );
+                          },
                     child: const Text('¿No tienes cuenta? Regístrate aquí'),
                   ),
                 ],
