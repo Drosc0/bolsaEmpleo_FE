@@ -290,7 +290,6 @@ class _StatsAndAuthSection extends StatelessWidget {
           ),
 
         // Mensaje si está logueado
-        // hacer un ifelse con !isLoggedIn si fuese posible???
         if (isLoggedIn)
           Text(
             '¡Bienvenido de nuevo! Usa el menú superior para acceder a tu dashboard.',

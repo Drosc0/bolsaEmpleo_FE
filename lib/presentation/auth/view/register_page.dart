@@ -17,7 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   // Estado para el selector de Rol (defecto: Aspirante)
   UserRoleOption _selectedRole = UserRoleOption.aspirant;
 
@@ -31,25 +31,31 @@ class _RegisterPageState extends State<RegisterPage> {
   void _submit(AuthViewModel viewModel) async {
     if (_formKey.currentState!.validate()) {
       // 1. Mapear el enum de Flutter al string esperado por NestJS
-      final roleString = _selectedRole == UserRoleOption.aspirant ? 'aspirante' : 'empresa';
-      
+      final roleString = _selectedRole == UserRoleOption.aspirant
+          ? 'aspirante'
+          : 'empresa';
+
       bool success = await viewModel.register(
         _emailController.text,
         _passwordController.text,
         roleString,
       );
 
+      if (!mounted) return;
+
       if (success) {
         // Registro exitoso: Navegar al Home o Dashboard
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Registro exitoso!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('¡Registro exitoso!')));
         // Si el login fue automático, el Consumer en main.dart manejará la navegación.
-        Navigator.pop(context); 
+        Navigator.pop(context);
       } else {
         // Mostrar error del backend
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al registrar: ${viewModel.errorMessage}')),
+          SnackBar(
+            content: Text('Error al registrar: ${viewModel.errorMessage}'),
+          ),
         );
       }
     }
@@ -82,10 +88,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value!.isEmpty || !value.contains('@') ? 'Introduzca un email válido' : null,
+                    validator: (value) => value!.isEmpty || !value.contains('@')
+                        ? 'Introduzca un email válido'
+                        : null,
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -93,22 +100,32 @@ class _RegisterPageState extends State<RegisterPage> {
                     decoration: const InputDecoration(
                       labelText: 'Contraseña (mínimo 6 caracteres)',
                       prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
                     ),
                     obscureText: true,
-                    validator: (value) => value!.length < 6 ? 'La contraseña debe tener al menos 6 caracteres' : null,
+                    validator: (value) => value!.length < 6
+                        ? 'La contraseña debe tener al menos 6 caracteres'
+                        : null,
                   ),
                   const SizedBox(height: 30),
 
                   //3. BOTÓN DE REGISTRO
-                  ElevatedButton(
-                    onPressed: isAuthenticating ? null : () => _submit(viewModel),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isAuthenticating
+                          ? null
+                          : () => _submit(viewModel),
+                      child: isAuthenticating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('Registrarse'),
                     ),
-                    child: isAuthenticating
-                        ? const CircularProgressIndicator()
-                        : const Text('Registrarse', style: TextStyle(fontSize: 18)),
                   ),
                   const SizedBox(height: 20),
 
@@ -118,7 +135,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Vuelve a la página de Login
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
                       );
                     },
                     child: const Text('¿Ya tienes cuenta? Inicia Sesión'),
@@ -141,10 +160,7 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Selecciona tu Rol:',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text('Selecciona tu Rol:', style: theme.textTheme.titleMedium),
             Row(
               children: [
                 Expanded(

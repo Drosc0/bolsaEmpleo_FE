@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 
 class OfferCard extends StatelessWidget {
   final JobOffer offer;
-  
+
   const OfferCard({super.key, required this.offer});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      // Elevation and shape are now handled by CardTheme in app_theme.dart
       child: InkWell(
+        borderRadius: BorderRadius.circular(16), // Matches CardTheme radius
         onTap: () {
           //Navegar a la página de detalles de la oferta
           //mas adelante eliminar el print
@@ -55,14 +55,15 @@ class OfferCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.15), //cambiar por .withValues()
+                  color: Theme.of(context).colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   offer.salaryRange,
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -73,7 +74,11 @@ class OfferCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, {required IconData icon, required String text}) {
+  Widget _buildInfoRow(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+  }) {
     return Row(
       children: [
         Icon(icon, size: 16, color: Theme.of(context).hintColor),
