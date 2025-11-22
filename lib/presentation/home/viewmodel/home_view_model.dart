@@ -1,14 +1,19 @@
 import 'package:bolsa_empleo/data/models/job_offer_model.dart';
 import 'package:bolsa_empleo/data/repositories/recruitment_repository.dart';
+import 'package:bolsa_empleo/data/repositories/applications_repository.dart';
 import 'package:flutter/material.dart';
 import '../../../data/models/stats_model.dart';
 
 enum ViewState { initial, loading, loaded, error }
 
 class HomeViewModel extends ChangeNotifier {
-  final RecruitmentRepository repository;
-  
-  HomeViewModel({required this.repository}) {
+  final RecruitmentRepository recruitmentRepository;
+  final ApplicationsRepository applicationsRepository;
+
+  HomeViewModel({
+    required this.recruitmentRepository,
+    required this.applicationsRepository,
+  }) {
     fetchInitialData();
   }
 
@@ -27,14 +32,14 @@ class HomeViewModel extends ChangeNotifier {
     _state = ViewState.loading;
     _errorMessage = null;
     notifyListeners();
-    
-   try {
+
+    try {
       // 1. Obtener ofertas REALES
-      _offers = await repository.getLatestJobOffers();
-      
+      _offers = await recruitmentRepository.getLatestJobOffers();
+
       // 2. Obtener estadísticas REALES
-      _stats = await repository.getAppStats(); 
-      
+      _stats = await recruitmentRepository.getAppStats();
+
       _state = ViewState.loaded;
     } catch (e) {
       // Ahora este error capturará problemas reales de conexión o del backend
@@ -43,5 +48,13 @@ class HomeViewModel extends ChangeNotifier {
       print('Error en HomeViewModel: $e');
     }
     notifyListeners();
+  }
+
+  Future<void> applyToJob(int offerId) async {
+    try {
+      await applicationsRepository.applyToJob(offerId);
+    } catch (e) {
+      rethrow;
+    }
   }
 }

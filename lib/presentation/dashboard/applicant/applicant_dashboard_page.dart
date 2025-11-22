@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'viewmodel/applicant_dashboard_view_model.dart';
 import '../../../data/repositories/profile_repository.dart';
 import '../../../data/repositories/applications_repository.dart';
+import '../../../data/repositories/job_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
 import 'widgets/edit_applicant_profile_dialog.dart';
@@ -22,6 +23,10 @@ class ApplicantDashboardPage extends StatelessWidget {
           apiService: ApiService(),
           storageService: SecureStorageService(),
         ),
+        jobRepository: JobRepository(
+          apiService: ApiService(),
+          storageService: SecureStorageService(),
+        ),
       ),
       child: const _ApplicantDashboardContent(),
     );
@@ -36,188 +41,295 @@ class _ApplicantDashboardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<ApplicantDashboardViewModel>();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Panel de Aspirante')),
-      body: viewModel.state == DashboardState.loading
-          ? const Center(child: CircularProgressIndicator())
-          : viewModel.state == DashboardState.error
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Panel de Aspirante')),
+        body: viewModel.state == DashboardState.loading
+            ? const Center(child: CircularProgressIndicator())
+            : viewModel.state == DashboardState.error
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(viewModel.errorMessage ?? 'Error desconocido'),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () => viewModel.fetchDashboardData(),
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
+                ),
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(viewModel.errorMessage ?? 'Error desconocido'),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () => viewModel.fetchDashboardData(),
-                    child: const Text('Reintentar'),
-                  ),
-                ],
-              ),
-            )
-          : Row(
-              children: [
-                // COLUMNA 1: Datos del Perfil y Edición
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.all(24.0),
-                    color: Theme.of(context).colorScheme.surface,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primaryContainer,
-                            child: Icon(
-                              Icons.person,
-                              size: 40,
-                              color: Theme.of(context).colorScheme.primary,
+                  // COLUMNA 1: Datos del Perfil (Flex 1)
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(24.0),
+                      color: Theme.of(context).colorScheme.surface,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: CircleAvatar(
+                              radius: 40,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
+                              child: Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: Text(
-                            viewModel.profile?.fullName ?? 'Usuario',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Divider(),
-                        const SizedBox(height: 16),
-                        if (viewModel.profile != null) ...[
-                          _ProfileInfoRow(
-                            icon: Icons.email,
-                            label: 'Email',
-                            value: viewModel.profile?.email ?? 'No disponible',
-                          ),
-                          const SizedBox(height: 12),
-                          _ProfileInfoRow(
-                            icon: Icons.phone,
-                            label: 'Teléfono',
-                            value: viewModel.profile?.phone ?? 'No disponible',
-                          ),
-                          const SizedBox(height: 12),
-                          _ProfileInfoRow(
-                            icon: Icons.link,
-                            label: 'LinkedIn',
-                            value:
-                                viewModel.profile?.linkedinUrl ??
-                                'No disponible',
-                          ),
-                          const SizedBox(height: 12),
-                          _ProfileInfoRow(
-                            icon: Icons.work,
-                            label: 'Portfolio',
-                            value:
-                                viewModel.profile?.portfolioUrl ??
-                                'No disponible',
-                          ),
-                        ] else
-                          const Text('No se encontró perfil'),
-                        const Spacer(),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    EditApplicantProfileDialog(
-                                      profile: viewModel.profile!,
-                                    ),
-                              );
-                            },
-                            icon: const Icon(Icons.edit),
-                            label: const Text('Modificar Datos'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const VerticalDivider(width: 1),
-
-                // COLUMNA 2: Ofertas Aplicadas (Mayor tamaño)
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Mis Candidaturas',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 20),
-                        Expanded(
-                          child: viewModel.applications.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'No has aplicado a ninguna oferta aún.',
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: viewModel.applications.length,
-                                  itemBuilder: (context, index) {
-                                    final app = viewModel.applications[index];
-                                    return Card(
-                                      margin: const EdgeInsets.only(
-                                        bottom: 12.0,
-                                      ),
-                                      child: ListTile(
-                                        title: Text(app.jobOffer.title),
-                                        subtitle: Text('Estado: ${app.status}'),
-                                        trailing: Text(
-                                          '${app.appliedAt.day}/${app.appliedAt.month}/${app.appliedAt.year}',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const VerticalDivider(width: 1),
-
-                // COLUMNA 3: Sugerencias
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sugerencias',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 20),
-                        const Expanded(
-                          child: Center(
+                          const SizedBox(height: 16),
+                          Center(
                             child: Text(
-                              'No hay sugerencias disponibles.',
+                              viewModel.profile?.fullName ?? 'Usuario',
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
                           ),
+                          const SizedBox(height: 24),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          if (viewModel.profile != null) ...[
+                            _ProfileInfoRow(
+                              icon: Icons.email,
+                              label: 'Email',
+                              value:
+                                  viewModel.profile?.email ?? 'No disponible',
+                            ),
+                            const SizedBox(height: 12),
+                            _ProfileInfoRow(
+                              icon: Icons.phone,
+                              label: 'Teléfono',
+                              value:
+                                  viewModel.profile?.phone ?? 'No disponible',
+                            ),
+                            const SizedBox(height: 12),
+                            _ProfileInfoRow(
+                              icon: Icons.link,
+                              label: 'LinkedIn',
+                              value:
+                                  viewModel.profile?.linkedinUrl ??
+                                  'No disponible',
+                            ),
+                            const SizedBox(height: 12),
+                            _ProfileInfoRow(
+                              icon: Icons.work,
+                              label: 'Portfolio',
+                              value:
+                                  viewModel.profile?.portfolioUrl ??
+                                  'No disponible',
+                            ),
+                          ] else
+                            const Text('No se encontró perfil'),
+                          const Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      EditApplicantProfileDialog(
+                                        profile: viewModel.profile!,
+                                      ),
+                                );
+                              },
+                              icon: const Icon(Icons.edit),
+                              label: const Text('Modificar Datos'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const VerticalDivider(width: 1),
+
+                  // COLUMNA 2: Ofertas y Candidaturas (Flex 2)
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        Container(
+                          color: Theme.of(context).colorScheme.surface,
+                          child: const TabBar(
+                            tabs: [
+                              Tab(text: 'Mis Candidaturas'),
+                              Tab(text: 'Ofertas Disponibles'),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: TabBarView(
+                            children: [
+                              // Tab 1: Mis Candidaturas
+                              viewModel.applications.isEmpty
+                                  ? const Center(
+                                      child: Text(
+                                        'No has aplicado a ninguna oferta aún.',
+                                      ),
+                                    )
+                                  : ListView.builder(
+                                      padding: const EdgeInsets.all(16),
+                                      itemCount: viewModel.applications.length,
+                                      itemBuilder: (context, index) {
+                                        final app =
+                                            viewModel.applications[index];
+                                        return Card(
+                                          margin: const EdgeInsets.only(
+                                            bottom: 12.0,
+                                          ),
+                                          child: ListTile(
+                                            title: Text(app.jobOffer.title),
+                                            subtitle: Text(
+                                              'Estado: ${app.status}',
+                                            ),
+                                            trailing: Text(
+                                              '${app.appliedAt.day}/${app.appliedAt.month}/${app.appliedAt.year}',
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                              // Tab 2: Ofertas Disponibles
+                              viewModel.jobOffers.isEmpty
+                                  ? const Center(
+                                      child: Text(
+                                        'No hay ofertas disponibles.',
+                                      ),
+                                    )
+                                  : ListView.builder(
+                                      padding: const EdgeInsets.all(16),
+                                      itemCount: viewModel.jobOffers.length,
+                                      itemBuilder: (context, index) {
+                                        final offer =
+                                            viewModel.jobOffers[index];
+                                        return Card(
+                                          margin: const EdgeInsets.only(
+                                            bottom: 12.0,
+                                          ),
+                                          child: InkWell(
+                                            onTap: () => _showOfferDetails(
+                                              context,
+                                              offer,
+                                              viewModel,
+                                            ),
+                                            child: ListTile(
+                                              title: Text(offer.title),
+                                              subtitle: Text(
+                                                '${offer.companyName} - ${offer.location}',
+                                              ),
+                                              trailing: ElevatedButton(
+                                                onPressed: () {
+                                                  _applyToOffer(
+                                                    context,
+                                                    viewModel,
+                                                    offer.id,
+                                                  );
+                                                },
+                                                child: const Text('Postularme'),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
-            ),
+                  const VerticalDivider(width: 1),
+
+                  // COLUMNA 3: Experiencia, Skills, Sugerencias (Flex 1)
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      padding: const EdgeInsets.all(16.0),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Fila 1: Experiencia
+                          Text(
+                            'Experiencia',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            flex: 1,
+                            child: viewModel.profile?.experience.isEmpty ?? true
+                                ? const Center(
+                                    child: Text('Sin experiencia registrada'),
+                                  )
+                                : ListView.builder(
+                                    itemCount:
+                                        viewModel.profile!.experience.length,
+                                    itemBuilder: (context, index) {
+                                      final exp =
+                                          viewModel.profile!.experience[index];
+                                      return Card(
+                                        child: ListTile(
+                                          title: Text(exp.title),
+                                          subtitle: Text(exp.company),
+                                          dense: true,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                          const Divider(),
+                          // Fila 2: Skills
+                          Text(
+                            'Habilidades',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            flex: 1,
+                            child: viewModel.profile?.skills.isEmpty ?? true
+                                ? const Center(
+                                    child: Text('Sin habilidades registradas'),
+                                  )
+                                : Wrap(
+                                    spacing: 8,
+                                    children: viewModel.profile!.skills
+                                        .map(
+                                          (skill) =>
+                                              Chip(label: Text(skill.name)),
+                                        )
+                                        .toList(),
+                                  ),
+                          ),
+                          const Divider(),
+                          // Fila 3: Sugerencias
+                          Text(
+                            'Sugerencias',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          const Expanded(
+                            flex: 1,
+                            child: Center(child: Text('No hay sugerencias.')),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
@@ -228,7 +340,6 @@ class _ProfileInfoRow extends StatelessWidget {
   final String value;
 
   const _ProfileInfoRow({
-    super.key,
     required this.icon,
     required this.label,
     required this.value,
@@ -258,5 +369,74 @@ class _ProfileInfoRow extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+void _showOfferDetails(
+  BuildContext context,
+  dynamic offer,
+  ApplicantDashboardViewModel viewModel,
+) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(offer.title),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Empresa: ${offer.companyName}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Ubicación: ${offer.location}'),
+            const SizedBox(height: 8),
+            const Text(
+              'Descripción:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(offer.description),
+            const SizedBox(height: 8),
+            Text('Salario: ${offer.salaryRange}'),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _applyToOffer(context, viewModel, offer.id);
+          },
+          child: const Text('Postularme'),
+        ),
+      ],
+    ),
+  );
+}
+
+void _applyToOffer(
+  BuildContext context,
+  ApplicantDashboardViewModel viewModel,
+  int offerId,
+) async {
+  try {
+    await viewModel.applyToOffer(offerId);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Te has postulado exitosamente')),
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al postular: $e')));
+    }
   }
 }

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class OfferCard extends StatelessWidget {
   final JobOffer offer;
+  final VoidCallback? onTap;
 
-  const OfferCard({super.key, required this.offer});
+  const OfferCard({super.key, required this.offer, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -12,11 +13,7 @@ class OfferCard extends StatelessWidget {
       // Elevation and shape are now handled by CardTheme in app_theme.dart
       child: InkWell(
         borderRadius: BorderRadius.circular(16), // Matches CardTheme radius
-        onTap: () {
-          //Navegar a la página de detalles de la oferta
-          //mas adelante eliminar el print
-          print('Ver detalles de la oferta ID: ${offer.id}');
-        },
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../viewmodel/home_view_model.dart';
 import '../../shared/offer_card.dart';
 import '../../../data/models/stats_model.dart';
+import '../../../data/models/job_offer_model.dart';
 import '../../auth/view/login_page.dart';
+import '../../common/viewmodel/theme_view_model.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,22 +16,48 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // El AuthViewModel nos dirá si debemos mostrar el botón de Login/Registro.
     final authViewModel = Provider.of<AuthViewModel>(context);
+    final themeViewModel = Provider.of<ThemeViewModel>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 770;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Plataforma de Reclutamiento'),
         centerTitle: false,
-        actions: authViewModel.isLoggedIn
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () {
-                    authViewModel.logout();
-                  },
-                  tooltip: 'Cerrar Sesión',
-                ),
-              ]
-            : null, // No muestra acciones si no está logueado
+        actions: [
+          // Theme Toggle Button (Always visible)
+          IconButton(
+            icon: Icon(
+              themeViewModel.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+            ),
+            onPressed: () {
+              themeViewModel.toggleTheme();
+            },
+            tooltip: themeViewModel.isDarkMode ? 'Modo Claro' : 'Modo Oscuro',
+          ),
+
+          // Login Icon (Visible only on small screens if not logged in)
+          if (isSmallScreen && !authViewModel.isLoggedIn)
+            IconButton(
+              icon: const Icon(Icons.login),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+              tooltip: 'Iniciar Sesión',
+            ),
+
+          if (authViewModel.isLoggedIn)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                authViewModel.logout();
+              },
+              tooltip: 'Cerrar Sesión',
+            ),
+        ],
       ),
       body: Consumer<HomeViewModel>(
         builder: (context, homeViewModel, child) {
@@ -45,6 +73,7 @@ class HomePage extends StatelessWidget {
                 context,
                 homeViewModel,
                 authViewModel.isLoggedIn,
+                isSmallScreen,
               );
             default:
               return const Center(child: Text('Cargando...'));
@@ -59,12 +88,17 @@ class HomePage extends StatelessWidget {
     BuildContext context,
     HomeViewModel viewModel,
     bool isLoggedIn,
+    bool isSmallScreen,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     if (screenWidth < 600) {
       // 1. MÓVIL (Una sola columna vertical)
-      return _MobileLayout(viewModel: viewModel, isLoggedIn: isLoggedIn);
+      return _MobileLayout(
+        viewModel: viewModel,
+        isLoggedIn: isLoggedIn,
+        isSmallScreen: isSmallScreen,
+      );
     } else {
       // 2. TABLET(Layout de dos columnas)/WEB(Layout de cuatro/seis columnas)
       int crossAxisCount;
@@ -83,6 +117,7 @@ class HomePage extends StatelessWidget {
         viewModel: viewModel,
         crossAxisCount: crossAxisCount,
         isLoggedIn: isLoggedIn,
+        isSmallScreen: isSmallScreen,
       );
     }
   }
@@ -95,7 +130,13 @@ class HomePage extends StatelessWidget {
 class _MobileLayout extends StatelessWidget {
   final HomeViewModel viewModel;
   final bool isLoggedIn;
-  const _MobileLayout({required this.viewModel, required this.isLoggedIn});
+  final bool isSmallScreen;
+
+  const _MobileLayout({
+    required this.viewModel,
+    required this.isLoggedIn,
+    required this.isSmallScreen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +146,11 @@ class _MobileLayout extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // 1. Estadísticas y Enlace (Ocupa todo el ancho)
-          _StatsAndAuthSection(stats: viewModel.stats, isLoggedIn: isLoggedIn),
+          _StatsAndAuthSection(
+            stats: viewModel.stats,
+            isLoggedIn: isLoggedIn,
+            isSmallScreen: isSmallScreen,
+          ),
           const SizedBox(height: 24),
 
           // 2. Título de Ofertas
@@ -131,7 +176,14 @@ class _MobileLayout extends StatelessWidget {
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
-                  child: OfferCard(offer: viewModel.offers[index]),
+                  child: OfferCard(
+                    offer: viewModel.offers[index],
+                    onTap: () => _showOfferDetails(
+                      context,
+                      viewModel.offers[index],
+                      isLoggedIn,
+                    ),
+                  ),
                 );
               },
             ),
@@ -149,11 +201,13 @@ class _TabletWebLayout extends StatelessWidget {
   final HomeViewModel viewModel;
   final int crossAxisCount;
   final bool isLoggedIn;
+  final bool isSmallScreen;
 
   const _TabletWebLayout({
     required this.viewModel,
     required this.crossAxisCount,
     required this.isLoggedIn,
+    required this.isSmallScreen,
   });
 
   @override
@@ -174,6 +228,7 @@ class _TabletWebLayout extends StatelessWidget {
           child: _StatsAndAuthSection(
             stats: viewModel.stats,
             isLoggedIn: isLoggedIn,
+            isSmallScreen: isSmallScreen,
           ),
         ),
 
@@ -213,7 +268,14 @@ class _TabletWebLayout extends StatelessWidget {
                       childAspectRatio: 3 / 2,
                     ),
                     itemBuilder: (context, index) {
-                      return OfferCard(offer: viewModel.offers[index]);
+                      return OfferCard(
+                        offer: viewModel.offers[index],
+                        onTap: () => _showOfferDetails(
+                          context,
+                          viewModel.offers[index],
+                          isLoggedIn,
+                        ),
+                      );
                     },
                   ),
               ],
@@ -232,8 +294,13 @@ class _TabletWebLayout extends StatelessWidget {
 class _StatsAndAuthSection extends StatelessWidget {
   final AppStats? stats;
   final bool isLoggedIn;
+  final bool isSmallScreen;
 
-  const _StatsAndAuthSection({this.stats, required this.isLoggedIn});
+  const _StatsAndAuthSection({
+    this.stats,
+    required this.isLoggedIn,
+    required this.isSmallScreen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -267,8 +334,8 @@ class _StatsAndAuthSection extends StatelessWidget {
 
         const SizedBox(height: 20),
 
-        // Enlace para Loguearse/Registrarse (SI NO ESTÁ LOGUEADO)
-        if (!isLoggedIn)
+        // Enlace para Loguearse/Registrarse (SI NO ESTÁ LOGUEADO y NO ES PANTALLA PEQUEÑA)
+        if (!isLoggedIn && !isSmallScreen)
           ElevatedButton.icon(
             onPressed: () {
               // Navegar a la página de Login
@@ -325,4 +392,75 @@ class _StatRow extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showOfferDetails(BuildContext context, JobOffer offer, bool isLoggedIn) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(offer.title),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Empresa: ${offer.companyName}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Ubicación: ${offer.location}'),
+            const SizedBox(height: 8),
+            const Text(
+              'Descripción:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(offer.description),
+            const SizedBox(height: 8),
+            Text('Salario: ${offer.salaryRange}'),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (!isLoggedIn) {
+              Navigator.pop(context); // Close dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            } else {
+              try {
+                final viewModel = Provider.of<HomeViewModel>(
+                  context,
+                  listen: false,
+                );
+                await viewModel.applyToJob(offer.id);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Te has postulado exitosamente'),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al postular: $e')),
+                  );
+                }
+              }
+            }
+          },
+          child: const Text('Postularme'),
+        ),
+      ],
+    ),
+  );
 }

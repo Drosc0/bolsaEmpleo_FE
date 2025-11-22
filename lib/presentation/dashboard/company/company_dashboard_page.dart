@@ -387,7 +387,6 @@ class _ProfileInfoRow extends StatelessWidget {
   final String value;
 
   const _ProfileInfoRow({
-    super.key,
     required this.icon,
     required this.label,
     required this.value,
