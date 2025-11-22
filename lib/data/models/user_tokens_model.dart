@@ -11,9 +11,9 @@ class UserTokens {
 
   factory UserTokens.fromJson(Map<String, dynamic> json) {
     return UserTokens(
-      accessToken: json['access_token'] as String, 
-      userId: json['user']['id'] as int,
-      userRole: json['user']['role'] as String,
+      accessToken: json['token'] as String,
+      userId: json['userId'] as int,
+      userRole: json['role'] as String,
     );
   }
 }
