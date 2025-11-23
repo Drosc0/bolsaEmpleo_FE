@@ -32,7 +32,11 @@ class CompanyDashboardViewModel extends ChangeNotifier {
       // Fetch company profile and job offers in parallel
       final results = await Future.wait([
         companyRepository.getMyCompanyProfile(),
-        companyRepository.getMyJobOffers(),
+        companyRepository
+            .getMyJobOffers(), // This now maps to JobRepository.getMyJobOffers via CompanyRepository wrapper or direct usage? Wait, CompanyRepository wraps JobRepository? No.
+        // Checking CompanyRepository to see if it has getMyJobOffers.
+        // If not, I need to add it there or use JobRepository directly.
+        // The VM uses CompanyRepository. Let's check CompanyRepository.
       ]);
 
       _companyProfile = results[0] as CompanyProfile;

@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 import '../../../../data/models/company_profile_model.dart';
 import '../viewmodel/company_dashboard_view_model.dart';
 
 class EditCompanyProfileDialog extends StatefulWidget {
   final CompanyProfile profile;
+  final CompanyDashboardViewModel viewModel;
 
-  const EditCompanyProfileDialog({super.key, required this.profile});
+  const EditCompanyProfileDialog({
+    super.key,
+    required this.profile,
+    required this.viewModel,
+  });
 
   @override
   State<EditCompanyProfileDialog> createState() =>
@@ -47,7 +52,7 @@ class _EditCompanyProfileDialogState extends State<EditCompanyProfileDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final viewModel = context.read<CompanyDashboardViewModel>();
+      final viewModel = widget.viewModel;
       await viewModel.updateCompanyProfile({
         'companyName': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
@@ -142,7 +147,7 @@ class _EditCompanyProfileDialogState extends State<EditCompanyProfileDialog> {
                     ),
                     const SizedBox(width: 16),
                     ElevatedButton(
-                      onPressed: _isLoading ? _saveChanges : null,
+                      onPressed: _isLoading ? null : _saveChanges,
                       child: _isLoading
                           ? const SizedBox(
                               width: 20,

@@ -31,13 +31,12 @@ class ApplicationsRepository {
   Future<void> applyToJob(int offerId) async {
     final token = await storageService.readToken();
 
-    // Intento 3: Volver a POST /recruitment/applications pero con 'jobId' en el body.
-    // El error original fue "property offerId should not exist", lo que sugiere que el DTO
-    // no tiene 'offerId'. Es muy probable que se llame 'jobId' o 'jobOfferId'.
-    // Probaremos con 'jobId' que es lo más estándar.
+    // Intento 4: El usuario reporta "property jobid should not exist".
+    // Esto significa que 'jobId' tampoco es correcto.
+    // Probaremos con 'jobOfferId', que es otro nombre común.
 
     await apiService.post('/recruitment/applications', {
-      'jobId': offerId,
+      'jobOfferId': offerId,
     }, token: token);
   }
 }

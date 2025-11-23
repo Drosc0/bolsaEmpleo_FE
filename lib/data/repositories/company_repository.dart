@@ -41,13 +41,15 @@ class CompanyRepository {
     return CompanyProfile.fromJson(json);
   }
 
-  /// GET /recruitment/offers (filtered by company)
+  /// GET /recruitment/offers/me
   /// Obtiene todas las ofertas de la empresa autenticada
-  /// Nota: Necesitamos verificar si el backend filtra automáticamente o necesitamos un endpoint específico
   Future<List<JobOffer>> getMyJobOffers() async {
     final token = await storageService.readToken();
 
-    final response = await apiService.get('/recruitment/offers', token: token);
+    final response = await apiService.get(
+      '/recruitment/offers/me',
+      token: token,
+    );
 
     final List<dynamic> jsonList = jsonDecode(response.body);
     return jsonList.map((json) => JobOffer.fromJson(json)).toList();

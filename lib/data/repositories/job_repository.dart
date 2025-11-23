@@ -23,4 +23,19 @@ class JobRepository {
     final List<dynamic> jsonList = jsonDecode(response.body);
     return jsonList.map((json) => JobOffer.fromJson(json)).toList();
   }
+
+  /// GET /recruitment/offers/me
+  /// Obtiene las ofertas creadas por la empresa autenticada
+  Future<List<JobOffer>> getMyJobOffers() async {
+    final token = await storageService.readToken();
+
+    // Endpoint estándar para obtener recursos propios
+    final response = await apiService.get(
+      '/recruitment/offers/me',
+      token: token,
+    );
+
+    final List<dynamic> jsonList = jsonDecode(response.body);
+    return jsonList.map((json) => JobOffer.fromJson(json)).toList();
+  }
 }

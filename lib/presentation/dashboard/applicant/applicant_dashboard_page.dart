@@ -6,7 +6,6 @@ import '../../../data/repositories/applications_repository.dart';
 import '../../../data/repositories/job_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
-import 'widgets/edit_applicant_profile_dialog.dart';
 
 class ApplicantDashboardPage extends StatelessWidget {
   const ApplicantDashboardPage({super.key});
@@ -131,22 +130,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                           ] else
                             const Text('No se encontró perfil'),
                           const Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      EditApplicantProfileDialog(
-                                        profile: viewModel.profile!,
-                                      ),
-                                );
-                              },
-                              icon: const Icon(Icons.edit),
-                              label: const Text('Modificar Datos'),
-                            ),
-                          ),
+                          SizedBox(),
                         ],
                       ),
                     ),

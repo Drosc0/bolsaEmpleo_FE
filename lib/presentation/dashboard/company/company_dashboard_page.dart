@@ -4,7 +4,6 @@ import 'viewmodel/company_dashboard_view_model.dart';
 import '../../../data/repositories/company_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
-import 'widgets/edit_company_profile_dialog.dart';
 
 class CompanyDashboardPage extends StatelessWidget {
   const CompanyDashboardPage({super.key});
@@ -108,21 +107,7 @@ class _CompanyDashboardContent extends StatelessWidget {
                               'No especificada',
                         ),
                         const Spacer(),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => EditCompanyProfileDialog(
-                                  profile: viewModel.companyProfile!,
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.edit),
-                            label: const Text('Modificar Datos'),
-                          ),
-                        ),
+                        SizedBox(),
                       ],
                     ),
                   ),
@@ -184,10 +169,13 @@ class _CompanyDashboardContent extends StatelessWidget {
                             const VerticalDivider(width: 1),
                             // Sub-Columna 2: Formulario Crear Oferta
                             Expanded(
-                              child: Container(
-                                color: Colors.green[50],
-                                padding: const EdgeInsets.all(16.0),
-                                child: const _CreateOfferForm(),
+                              child: Card(
+                                elevation: 2,
+                                margin: const EdgeInsets.all(8.0),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: const _CreateOfferForm(),
+                                ),
                               ),
                             ),
                           ],

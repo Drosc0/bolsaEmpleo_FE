@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 import '../../../../data/models/profile_model.dart';
 import '../../../../data/models/skill_model.dart';
 import '../../../../data/models/experience_model.dart';
@@ -7,8 +7,13 @@ import '../viewmodel/applicant_dashboard_view_model.dart';
 
 class EditApplicantProfileDialog extends StatefulWidget {
   final Profile profile;
+  final ApplicantDashboardViewModel viewModel;
 
-  const EditApplicantProfileDialog({super.key, required this.profile});
+  const EditApplicantProfileDialog({
+    super.key,
+    required this.profile,
+    required this.viewModel,
+  });
 
   @override
   State<EditApplicantProfileDialog> createState() =>
@@ -90,7 +95,8 @@ class _EditApplicantProfileDialogState
     setState(() => _isLoading = true);
 
     try {
-      final viewModel = context.read<ApplicantDashboardViewModel>();
+      // Usamos el viewModel pasado por parámetro para evitar problemas de contexto
+      final viewModel = widget.viewModel;
 
       // Construct the full profile map
       final profileData = {

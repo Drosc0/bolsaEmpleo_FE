@@ -91,6 +91,7 @@ class HomePage extends StatelessWidget {
     bool isSmallScreen,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600 && screenWidth < 1100;
 
     if (screenWidth < 600) {
       // 1. MÓVIL (Una sola columna vertical)
@@ -118,6 +119,7 @@ class HomePage extends StatelessWidget {
         crossAxisCount: crossAxisCount,
         isLoggedIn: isLoggedIn,
         isSmallScreen: isSmallScreen,
+        isTablet: isTablet,
       );
     }
   }
@@ -150,6 +152,7 @@ class _MobileLayout extends StatelessWidget {
             stats: viewModel.stats,
             isLoggedIn: isLoggedIn,
             isSmallScreen: isSmallScreen,
+            isTablet: false,
           ),
           const SizedBox(height: 24),
 
@@ -202,12 +205,14 @@ class _TabletWebLayout extends StatelessWidget {
   final int crossAxisCount;
   final bool isLoggedIn;
   final bool isSmallScreen;
+  final bool isTablet;
 
   const _TabletWebLayout({
     required this.viewModel,
     required this.crossAxisCount,
     required this.isLoggedIn,
     required this.isSmallScreen,
+    required this.isTablet,
   });
 
   @override
@@ -229,6 +234,7 @@ class _TabletWebLayout extends StatelessWidget {
             stats: viewModel.stats,
             isLoggedIn: isLoggedIn,
             isSmallScreen: isSmallScreen,
+            isTablet: isTablet,
           ),
         ),
 
@@ -265,7 +271,7 @@ class _TabletWebLayout extends StatelessWidget {
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: 20.0,
                       mainAxisSpacing: 20.0,
-                      childAspectRatio: 3 / 2,
+                      childAspectRatio: 1.1, // Adjusted for taller cards
                     ),
                     itemBuilder: (context, index) {
                       return OfferCard(
@@ -295,11 +301,13 @@ class _StatsAndAuthSection extends StatelessWidget {
   final AppStats? stats;
   final bool isLoggedIn;
   final bool isSmallScreen;
+  final bool isTablet;
 
   const _StatsAndAuthSection({
     this.stats,
     required this.isLoggedIn,
     required this.isSmallScreen,
+    required this.isTablet,
   });
 
   @override
@@ -317,16 +325,28 @@ class _StatsAndAuthSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Estadísticas de la Comunidad',
+                  'Estadísticas',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const Divider(),
                 _StatRow(
-                  label: 'Usuarios Registrados',
+                  label: 'Usuarios',
                   count: stats!.totalUsers,
+                  icon: Icons.group,
+                  isTablet: isTablet,
                 ),
-                _StatRow(label: 'Aspirantes', count: stats!.aspirants),
-                _StatRow(label: 'Empresas', count: stats!.companies),
+                _StatRow(
+                  label: 'Aspirantes',
+                  count: stats!.aspirants,
+                  icon: Icons.person,
+                  isTablet: isTablet,
+                ),
+                _StatRow(
+                  label: 'Empresas',
+                  count: stats!.companies,
+                  icon: Icons.business,
+                  isTablet: isTablet,
+                ),
               ],
             ),
           ),
@@ -345,10 +365,7 @@ class _StatsAndAuthSection extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.login),
-            label: const Text(
-              'Iniciar Sesión / Registrarse',
-              style: TextStyle(fontSize: 16),
-            ),
+            label: const Text('Ingresar', style: TextStyle(fontSize: 16)),
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
               backgroundColor: Theme.of(context).colorScheme.secondary,
@@ -359,7 +376,7 @@ class _StatsAndAuthSection extends StatelessWidget {
         // Mensaje si está logueado
         if (isLoggedIn)
           Text(
-            '¡Bienvenido de nuevo! Usa el menú superior para acceder a tu dashboard.',
+            '¡Bienvenido!',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
@@ -371,17 +388,34 @@ class _StatsAndAuthSection extends StatelessWidget {
 class _StatRow extends StatelessWidget {
   final String label;
   final int count;
+  final IconData icon;
+  final bool isTablet;
 
-  const _StatRow({required this.label, required this.count});
+  const _StatRow({
+    required this.label,
+    required this.count,
+    required this.icon,
+    required this.isTablet,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodyLarge),
+          if (isTablet)
+            Tooltip(
+              message: label,
+              child: Icon(
+                icon,
+                size: 28,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            )
+          else
+            Text(label, style: Theme.of(context).textTheme.bodyLarge),
           Text(
             count.toString(),
             style: Theme.of(
