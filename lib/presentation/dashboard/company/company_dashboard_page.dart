@@ -4,6 +4,7 @@ import 'viewmodel/company_dashboard_view_model.dart';
 import '../../../data/repositories/company_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
+import 'widgets/edit_company_profile_dialog.dart';
 
 class CompanyDashboardPage extends StatelessWidget {
   const CompanyDashboardPage({super.key});
@@ -105,6 +106,23 @@ class _CompanyDashboardContent extends StatelessWidget {
                           value:
                               viewModel.companyProfile?.location ??
                               'No especificada',
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => EditCompanyProfileDialog(
+                                  profile: viewModel.companyProfile!,
+                                  viewModel: viewModel,
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.edit),
+                            label: const Text('Modificar Datos'),
+                          ),
                         ),
                         const Spacer(),
                         SizedBox(),

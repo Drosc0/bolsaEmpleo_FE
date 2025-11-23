@@ -6,6 +6,7 @@ import '../../../data/repositories/applications_repository.dart';
 import '../../../data/repositories/job_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
+import 'widgets/edit_applicant_profile_dialog.dart';
 
 class ApplicantDashboardPage extends StatelessWidget {
   const ApplicantDashboardPage({super.key});
@@ -129,6 +130,24 @@ class _ApplicantDashboardContent extends StatelessWidget {
                             ),
                           ] else
                             const Text('No se encontró perfil'),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      EditApplicantProfileDialog(
+                                        profile: viewModel.profile!,
+                                        viewModel: viewModel,
+                                      ),
+                                );
+                              },
+                              icon: const Icon(Icons.edit),
+                              label: const Text('Modificar Datos'),
+                            ),
+                          ),
                           const Spacer(),
                           SizedBox(),
                         ],
@@ -239,9 +258,10 @@ class _ApplicantDashboardContent extends StatelessWidget {
                     flex: 1,
                     child: Container(
                       padding: const EdgeInsets.all(16.0),
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.3),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

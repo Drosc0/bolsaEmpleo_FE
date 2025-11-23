@@ -41,21 +41,17 @@ class CompanyRepository {
     return CompanyProfile.fromJson(json);
   }
 
-  /// GET /recruitment/offers/me
-  /// Obtiene todas las ofertas de la empresa autenticada
+  /// GET /recruitment/offers
+  /// Obtiene todas las ofertas (se filtrarán en el ViewModel)
   Future<List<JobOffer>> getMyJobOffers() async {
     final token = await storageService.readToken();
 
-    final response = await apiService.get(
-      '/recruitment/offers/me',
-      token: token,
-    );
+    final response = await apiService.get('/recruitment/offers', token: token);
 
     final List<dynamic> jsonList = jsonDecode(response.body);
     return jsonList.map((json) => JobOffer.fromJson(json)).toList();
   }
 
-  /// POST /recruitment/offers
   /// Crea una nueva oferta de trabajo
   Future<JobOffer> createJobOffer(Map<String, dynamic> offerData) async {
     final token = await storageService.readToken();

@@ -32,15 +32,17 @@ class CompanyDashboardViewModel extends ChangeNotifier {
       // Fetch company profile and job offers in parallel
       final results = await Future.wait([
         companyRepository.getMyCompanyProfile(),
-        companyRepository
-            .getMyJobOffers(), // This now maps to JobRepository.getMyJobOffers via CompanyRepository wrapper or direct usage? Wait, CompanyRepository wraps JobRepository? No.
-        // Checking CompanyRepository to see if it has getMyJobOffers.
-        // If not, I need to add it there or use JobRepository directly.
-        // The VM uses CompanyRepository. Let's check CompanyRepository.
+        companyRepository.getMyJobOffers(),
       ]);
 
       _companyProfile = results[0] as CompanyProfile;
-      _jobOffers = results[1] as List<JobOffer>;
+      final allOffers = results[1] as List<JobOffer>;
+
+      // Filtrar ofertas localmente para mostrar solo las de esta empresa
+      // Esto es necesario porque el endpoint /recruitment/offers devuelve todas las ofertas públicas
+      _jobOffers = allOffers
+          .where((offer) => offer.companyId == _companyProfile?.id)
+          .toList();
       _state = DashboardState.loaded;
     } catch (e) {
       print('ERROR COMPANY DASHBOARD: $e');
