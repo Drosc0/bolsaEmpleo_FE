@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'viewmodel/applicant_dashboard_view_model.dart';
+import '../../../data/models/job_offer_model.dart';
 import '../../../data/repositories/profile_repository.dart';
 import '../../../data/repositories/applications_repository.dart';
 import '../../../data/repositories/job_repository.dart';
@@ -367,7 +368,7 @@ class _ProfileInfoRow extends StatelessWidget {
 
 void _showOfferDetails(
   BuildContext context,
-  dynamic offer,
+  JobOffer offer,
   ApplicantDashboardViewModel viewModel,
 ) {
   showDialog(

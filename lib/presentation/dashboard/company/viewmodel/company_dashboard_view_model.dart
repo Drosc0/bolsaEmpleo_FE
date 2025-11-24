@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../data/repositories/company_repository.dart';
 import '../../../../data/models/company_profile_model.dart';
 import '../../../../data/models/job_offer_model.dart';
+import '../../../../data/models/application_model.dart';
 
 enum DashboardState { loading, loaded, error }
 
@@ -29,7 +30,7 @@ class CompanyDashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch company profile and job offers in parallel
+      // Pido el perfil y las ofertas a la vez, para acabar antes.
       final results = await Future.wait([
         companyRepository.getMyCompanyProfile(),
         companyRepository.getMyJobOffers(),
@@ -38,8 +39,8 @@ class CompanyDashboardViewModel extends ChangeNotifier {
       _companyProfile = results[0] as CompanyProfile;
       final allOffers = results[1] as List<JobOffer>;
 
-      // Filtrar ofertas localmente para mostrar solo las de esta empresa
-      // Esto es necesario porque el endpoint /recruitment/offers devuelve todas las ofertas públicas
+      // Aqui filtro las ofertas porque el servidor me las da todas y yo solo quiero las mias.
+      // Un poco chapuza pero funciona.
       _jobOffers = allOffers
           .where((offer) => offer.companyId == _companyProfile?.id)
           .toList();
@@ -76,6 +77,57 @@ class CompanyDashboardViewModel extends ChangeNotifier {
     } catch (e) {
       print('ERROR UPDATING PROFILE: $e');
       _errorMessage = 'Error al actualizar perfil: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<List<Application>> fetchApplicationsForOffer(int offerId) async {
+    try {
+      return await companyRepository.getApplicationsForOffer(offerId);
+    } catch (e) {
+      print('ERROR FETCHING APPLICATIONS: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateApplicationStatus(int applicationId, String status) async {
+    try {
+      await companyRepository.updateApplicationStatus(applicationId, status);
+      notifyListeners();
+    } catch (e) {
+      print('ERROR UPDATING APPLICATION STATUS: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateOffer(int offerId, Map<String, dynamic> offerData) async {
+    try {
+      final updatedOffer = await companyRepository.updateJobOffer(
+        offerId,
+        offerData,
+      );
+      final index = _jobOffers.indexWhere((o) => o.id == offerId);
+      if (index != -1) {
+        _jobOffers[index] = updatedOffer;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('ERROR UPDATING OFFER: $e');
+      _errorMessage = 'Error al actualizar oferta: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> deleteOffer(int offerId) async {
+    try {
+      await companyRepository.deleteJobOffer(offerId);
+      _jobOffers.removeWhere((o) => o.id == offerId);
+      notifyListeners();
+    } catch (e) {
+      print('ERROR DELETING OFFER: $e');
+      _errorMessage = 'Error al eliminar oferta: $e';
       notifyListeners();
       rethrow;
     }

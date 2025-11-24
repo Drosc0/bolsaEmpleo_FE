@@ -100,8 +100,6 @@ class _EditApplicantProfileDialogState
 
       // Construct the full profile map
       final profileData = {
-        'firstName': _firstNameController.text.trim(),
-        'lastName': _lastNameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'linkedinUrl': _linkedinController.text.trim(),
         'portfolioUrl': _portfolioController.text.trim(),
@@ -177,11 +175,11 @@ class _EditApplicantProfileDialogState
                                   child: TextFormField(
                                     controller: _firstNameController,
                                     decoration: const InputDecoration(
-                                      labelText: 'Nombre',
+                                      labelText: 'Nombre (No modificable)',
+                                      prefixIcon: Icon(Icons.lock_outline),
                                     ),
-                                    validator: (value) => value?.isEmpty ?? true
-                                        ? 'Requerido'
-                                        : null,
+                                    readOnly: true,
+                                    enabled: false,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -189,11 +187,11 @@ class _EditApplicantProfileDialogState
                                   child: TextFormField(
                                     controller: _lastNameController,
                                     decoration: const InputDecoration(
-                                      labelText: 'Apellido',
+                                      labelText: 'Apellido (No modificable)',
+                                      prefixIcon: Icon(Icons.lock_outline),
                                     ),
-                                    validator: (value) => value?.isEmpty ?? true
-                                        ? 'Requerido'
-                                        : null,
+                                    readOnly: true,
+                                    enabled: false,
                                   ),
                                 ),
                               ],

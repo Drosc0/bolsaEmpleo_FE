@@ -5,6 +5,7 @@ import '../../../data/repositories/company_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
 import 'widgets/edit_company_profile_dialog.dart';
+import 'widgets/offer_details_dialog.dart';
 
 class CompanyDashboardPage extends StatelessWidget {
   const CompanyDashboardPage({super.key});
@@ -231,10 +232,22 @@ class _CompanyDashboardContent extends StatelessWidget {
                                             margin: const EdgeInsets.only(
                                               bottom: 12.0,
                                             ),
-                                            child: ListTile(
-                                              title: Text(offer.title),
-                                              subtitle: Text(
-                                                '${offer.location} - ${offer.salaryRange}',
+                                            child: InkWell(
+                                              onTap: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      OfferDetailsDialog(
+                                                        offer: offer,
+                                                        viewModel: viewModel,
+                                                      ),
+                                                );
+                                              },
+                                              child: ListTile(
+                                                title: Text(offer.title),
+                                                subtitle: Text(
+                                                  '${offer.location} - ${offer.salaryRange}',
+                                                ),
                                               ),
                                             ),
                                           );

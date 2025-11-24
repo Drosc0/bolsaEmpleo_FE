@@ -5,7 +5,7 @@ import '../constants.dart';
 class ApiService {
   final String baseUrl = getBaseUrl();
 
-  // Función privada para el manejo centralizado de errores HTTP
+  // Esta funcion es para cuando la cosa va mal. Si el servidor se queja, aqui lo pillamos.
   void _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return; // Éxito
@@ -32,7 +32,7 @@ class ApiService {
   // MÉTODOS HTTP REALES
   // ==========================================================
 
-  // 1. POST (Para Login y Registro)
+  // 1. POST: Esto es para enviar cosas nuevas, como cuando te registras.
   Future<http.Response> post(
     String path,
     Map<String, dynamic> body, {
@@ -50,7 +50,7 @@ class ApiService {
     return response;
   }
 
-  // 2. GET (Para obtener ofertas y estadísticas)
+  // 2. GET: Esto es para pedir info, dame dame dame.
   Future<http.Response> get(String path, {String? token}) async {
     final url = Uri.parse('$baseUrl$path');
 
@@ -60,7 +60,7 @@ class ApiService {
     return response;
   }
 
-  // 3. PUT (Para actualizar recursos)
+  // 3. PUT: Esto es para cambiar cosas que ya existen, como editar tu perfil.
   Future<http.Response> put(
     String path,
     Map<String, dynamic> body, {
@@ -72,6 +72,19 @@ class ApiService {
       url,
       headers: _buildHeaders(token: token),
       body: jsonEncode(body),
+    );
+
+    _handleResponse(response);
+    return response;
+  }
+
+  // 4. DELETE: Esto es para borrar cosas, adios muy buenas.
+  Future<http.Response> delete(String path, {String? token}) async {
+    final url = Uri.parse('$baseUrl$path');
+
+    final response = await http.delete(
+      url,
+      headers: _buildHeaders(token: token),
     );
 
     _handleResponse(response);

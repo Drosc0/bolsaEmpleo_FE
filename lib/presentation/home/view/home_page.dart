@@ -217,6 +217,14 @@ class _TabletWebLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Ajuste de altura de tarjetas para rango específico (900px - 1240px)
+    double childAspectRatio = 1.1; // Valor por defecto
+    if (screenWidth >= 900 && screenWidth <= 1240) {
+      childAspectRatio = 0.85; // Tarjetas más altas
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -271,7 +279,7 @@ class _TabletWebLayout extends StatelessWidget {
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: 20.0,
                       mainAxisSpacing: 20.0,
-                      childAspectRatio: 1.1, // Adjusted for taller cards
+                      childAspectRatio: childAspectRatio,
                     ),
                     itemBuilder: (context, index) {
                       return OfferCard(
