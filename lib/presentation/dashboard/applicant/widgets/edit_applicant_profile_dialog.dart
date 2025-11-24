@@ -29,7 +29,7 @@ class _EditApplicantProfileDialogState
   late TextEditingController _linkedinController;
   late TextEditingController _portfolioController;
 
-  // Lists to manage state
+  // Listas para guardar tus cosas mientras editas.
   late List<Skill> _skills;
   late List<Experience> _experience;
 
@@ -95,10 +95,10 @@ class _EditApplicantProfileDialogState
     setState(() => _isLoading = true);
 
     try {
-      // Usamos el viewModel pasado por parámetro para evitar problemas de contexto
+      // Usamos el viewModel que nos pasan, para no liarla con el contexto.
       final viewModel = widget.viewModel;
 
-      // Construct the full profile map
+      // Empaquetamos todo para mandarlo al servidor.
       final profileData = {
         'phone': _phoneController.text.trim(),
         'linkedinUrl': _linkedinController.text.trim(),
@@ -155,7 +155,7 @@ class _EditApplicantProfileDialogState
                   key: _formKey,
                   child: TabBarView(
                     children: [
-                      // Tab 1: Datos Personales
+                      // Tab 1: Quien eres. (Aunque el email y nombre no se tocan).
                       SingleChildScrollView(
                         child: Column(
                           children: [
@@ -221,7 +221,7 @@ class _EditApplicantProfileDialogState
                         ),
                       ),
 
-                      // Tab 2: Experiencia
+                      // Tab 2: Donde has currado.
                       Column(
                         children: [
                           Expanded(
@@ -264,7 +264,7 @@ class _EditApplicantProfileDialogState
                         ],
                       ),
 
-                      // Tab 3: Habilidades
+                      // Tab 3: Lo que sabes hacer.
                       Column(
                         children: [
                           Expanded(

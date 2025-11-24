@@ -34,7 +34,7 @@ class ApplicantDashboardPage extends StatelessWidget {
   }
 }
 
-// StatelessWidget que contiene la lógica de la pantalla
+// Aqui empieza la fiesta. La pantalla principal del candidato.
 class _ApplicantDashboardContent extends StatelessWidget {
   const _ApplicantDashboardContent();
 
@@ -65,7 +65,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
             : Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // COLUMNA 1: Datos del Perfil (Flex 1)
+                  // COLUMNA 1: Quien soy yo? Mi foto y mis datos.
                   Expanded(
                     flex: 1,
                     child: Container(
@@ -157,7 +157,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                   ),
                   const VerticalDivider(width: 1),
 
-                  // COLUMNA 2: Ofertas y Candidaturas (Flex 2)
+                  // COLUMNA 2: Lo importante. Las ofertas y mis candidaturas.
                   Expanded(
                     flex: 2,
                     child: Column(
@@ -174,7 +174,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                         Expanded(
                           child: TabBarView(
                             children: [
-                              // Tab 1: Mis Candidaturas
+                              // Tab 1: Donde me he apuntado ya.
                               viewModel.applications.isEmpty
                                   ? const Center(
                                       child: Text(
@@ -203,7 +203,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                                         );
                                       },
                                     ),
-                              // Tab 2: Ofertas Disponibles
+                              // Tab 2: Ofertas frescas. A por ellas!
                               viewModel.jobOffers.isEmpty
                                   ? const Center(
                                       child: Text(
@@ -254,7 +254,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                   ),
                   const VerticalDivider(width: 1),
 
-                  // COLUMNA 3: Experiencia, Skills, Sugerencias (Flex 1)
+                  // COLUMNA 3: Mis skills. Soy un crack y aqui lo demuestro.
                   Expanded(
                     flex: 1,
                     child: Container(

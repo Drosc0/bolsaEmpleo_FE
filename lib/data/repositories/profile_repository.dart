@@ -9,8 +9,7 @@ class ProfileRepository {
 
   ProfileRepository({required this.apiService, required this.storageService});
 
-  /// GET /recruitment/profile
-  /// Obtiene el perfil del aspirante autenticado
+  // Quien soy? A donde voy? Aqui pido mis datos.
   Future<Profile> getMyProfile() async {
     final token = await storageService.readToken();
 
@@ -20,8 +19,7 @@ class ProfileRepository {
     return Profile.fromJson(json);
   }
 
-  /// PUT /recruitment/profile
-  /// Actualiza el perfil del aspirante
+  // Cambio de look. Actualizo mi perfil para estar mas guapo.
   Future<Profile> updateProfile(Map<String, dynamic> profileData) async {
     final token = await storageService.readToken();
 

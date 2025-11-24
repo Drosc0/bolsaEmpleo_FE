@@ -12,8 +12,7 @@ class ApplicationsRepository {
     required this.storageService,
   });
 
-  /// GET /recruitment/applications/me
-  /// Obtiene todas las candidaturas del aspirante autenticado
+  // A donde he echado el curriculo? Vamos a ver si hay suerte.
   Future<List<Application>> getMyApplications() async {
     final token = await storageService.readToken();
 
@@ -26,14 +25,13 @@ class ApplicationsRepository {
     return jsonList.map((json) => Application.fromJson(json)).toList();
   }
 
-  /// POST /recruitment/applications
-  /// Postula a una oferta de trabajo
+  // Me gusta este trabajo! Me apunto.
   Future<void> applyToJob(int offerId) async {
     final token = await storageService.readToken();
 
     // Intento 4: El usuario reporta "property jobid should not exist".
     // Esto significa que 'jobId' tampoco es correcto.
-    // Probaremos con 'jobOfferId', que es otro nombre común.
+    // Probaremos con 'jobOfferId', que es otro nombre común, en algun momento sonara la flauta.
 
     await apiService.post('/recruitment/applications', {
       'jobOfferId': offerId,

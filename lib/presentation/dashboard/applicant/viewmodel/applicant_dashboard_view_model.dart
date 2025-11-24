@@ -67,7 +67,7 @@ class ApplicantDashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch profile, applications, and job offers in parallel
+      // Pido todo a la vez: quien soy, que he pedido y que hay nuevo.
       final results = await Future.wait([
         profileRepository.getMyProfile(),
         applicationsRepository.getMyApplications(),

@@ -9,8 +9,7 @@ class JobRepository {
 
   JobRepository({required this.apiService, required this.storageService});
 
-  /// GET /recruitment/offers
-  /// Obtiene todas las ofertas de trabajo disponibles
+  // Que hay de nuevo viejo? Dame todas las ofertas de trabajo.
   Future<List<JobOffer>> getJobOffers() async {
     final token = await storageService.readToken();
 
@@ -24,8 +23,7 @@ class JobRepository {
     return jsonList.map((json) => JobOffer.fromJson(json)).toList();
   }
 
-  /// GET /recruitment/offers/me
-  /// Obtiene las ofertas creadas por la empresa autenticada
+  // Estas son las ofertas que yo he creado (si soy empresa, que lo dudo).
   Future<List<JobOffer>> getMyJobOffers() async {
     final token = await storageService.readToken();
 
