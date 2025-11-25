@@ -28,9 +28,7 @@ class ApiService {
     };
   }
 
-  // ==========================================================
-  // MÉTODOS HTTP REALES
-  // ==========================================================
+  // MÉTODOS HTTP
 
   // 1. POST: Esto es para enviar cosas nuevas, como cuando te registras.
   Future<http.Response> post(

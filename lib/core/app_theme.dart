@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Definición de Colores
-  // Verde claro primario
+  // Verde claro primario como mis ojos
   static const Color lightPrimaryGreen = Color(
     0xFF81C784,
-  ); // Shade de Light Green 500
+  ); 
 
   // Anaranjado/Naranja secundario
-  static const Color accentOrange = Color(0xFFFF9800); // Naranja estándar
+  static const Color accentOrange = Color(0xFFFF9800);
 
   // Color primario oscuro
   static const Color darkPrimaryDeepBlue = Color(
     0xFF1A237E,
-  ); // Deep Indigo/Dark Blue
+  );
 
   // 1. TEMA CLARO
   // Primario: Verde Clarito
@@ -24,8 +24,8 @@ class AppTheme {
     final base = ThemeData.light();
     return base.copyWith(
       colorScheme: base.colorScheme.copyWith(
-        primary: lightPrimaryGreen, // Verde Clarito
-        secondary: accentOrange, // Anaranjado
+        primary: lightPrimaryGreen,
+        secondary: accentOrange,
         tertiary: accentOrange,
         surface: Colors.white, // Fondo de pantalla muy claro
         onPrimary: Colors.white, // Texto sobre el primario (verde)
@@ -41,7 +41,7 @@ class AppTheme {
         backgroundColor: accentOrange,
       ),
       cardTheme: base.cardTheme.copyWith(
-        elevation: 4, // Mayor elevación
+        elevation: 4, // Mayor elevación que me salieron taponitas
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
@@ -61,11 +61,11 @@ class AppTheme {
           36,
           53,
           240,
-        ), // Estándar Oscuro (Deep Blue)
-        secondary: accentOrange, // Naranja
+        ),
+        secondary: accentOrange, 
         tertiary: accentOrange,
         brightness: Brightness.dark,
-        surface: const Color(0xFF1E1E1E), // Fondo de pantalla oscuro
+        surface: const Color(0xFF1E1E1E), // Fondo de pantalla oscuro por si no quedo claro
         onPrimary: Colors.white,
         onSecondary: Colors.black,
       ),
@@ -78,7 +78,7 @@ class AppTheme {
       floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(
         backgroundColor: accentOrange,
       ),
-      // Ajuste para el color de las tarjetas
+      // Ajuste para el color y figura de las tarjetas 
       cardColor: const Color(0xFF1E1E1E),
       cardTheme: base.cardTheme.copyWith(
         elevation: 4,
