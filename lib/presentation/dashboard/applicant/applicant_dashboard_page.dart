@@ -74,12 +74,14 @@ class _ApplicantDashboardContent extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // el circulito clasico
                           Center(
                             child: CircleAvatar(
                               radius: 40,
                               backgroundColor: Theme.of(
                                 context,
                               ).colorScheme.primaryContainer,
+                              // icono de personita gris
                               child: Icon(
                                 Icons.person,
                                 size: 40,
@@ -104,6 +106,8 @@ class _ApplicantDashboardContent extends StatelessWidget {
                               icon: Icons.email,
                               label: 'Email',
                               value:
+                                  // to be or not to be
+                                  // buenu lo puse por si no tiene pero se va a dar el caso
                                   viewModel.profile?.email ?? 'No disponible',
                             ),
                             const SizedBox(height: 12),
@@ -118,36 +122,34 @@ class _ApplicantDashboardContent extends StatelessWidget {
                               icon: Icons.link,
                               label: 'LinkedIn',
                               value:
-                                  viewModel.profile?.linkedinUrl ??
-                                  'No disponible',
+                                  viewModel.profile?.linkedinUrl ?? 'No disponible',
                             ),
                             const SizedBox(height: 12),
                             _ProfileInfoRow(
                               icon: Icons.work,
                               label: 'Portfolio',
                               value:
-                                  viewModel.profile?.portfolioUrl ??
-                                  'No disponible',
+                                  viewModel.profile?.portfolioUrl ?? 'No disponible',
                             ),
                           ] else
                             const Text('No se encontró perfil'),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      EditApplicantProfileDialog(
-                                        profile: viewModel.profile!,
-                                        viewModel: viewModel,
-                                      ),
-                                );
-                              },
-                              icon: const Icon(Icons.edit),
-                              label: const Text('Modificar Datos'),
-                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) =>
+                                        EditApplicantProfileDialog(
+                                          profile: viewModel.profile!,
+                                          viewModel: viewModel,
+                                        ),
+                                  );
+                                },
+                                icon: const Icon(Icons.edit),
+                                label: const Text('Modificar Datos'),
+                              ),
                           ),
                           const Spacer(),
                           SizedBox(),
@@ -164,6 +166,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                       children: [
                         Container(
                           color: Theme.of(context).colorScheme.surface,
+                          // va en dos pestañitas pa que sea mas chuchipiruli
                           child: const TabBar(
                             tabs: [
                               Tab(text: 'Mis Candidaturas'),
@@ -176,6 +179,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                             children: [
                               // Tab 1: Donde me he apuntado ya.
                               viewModel.applications.isEmpty
+                                  // pro si aun no has encontrado tu puesto idilico
                                   ? const Center(
                                       child: Text(
                                         'No has aplicado a ninguna oferta aún.',
@@ -205,6 +209,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                                     ),
                               // Tab 2: Ofertas frescas. A por ellas!
                               viewModel.jobOffers.isEmpty
+                                  // por si las empresas no quieren a nadie
                                   ? const Center(
                                       child: Text(
                                         'No hay ofertas disponibles.',
@@ -275,6 +280,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                           Expanded(
                             flex: 1,
                             child: viewModel.profile?.experience.isEmpty ?? true
+                                // por si nunca hiciste nada ;)
                                 ? const Center(
                                     child: Text('Sin experiencia registrada'),
                                   )
@@ -304,6 +310,7 @@ class _ApplicantDashboardContent extends StatelessWidget {
                           Expanded(
                             flex: 1,
                             child: viewModel.profile?.skills.isEmpty ?? true
+                                // por si no eres MacGuiver
                                 ? const Center(
                                     child: Text('Sin habilidades registradas'),
                                   )
@@ -421,12 +428,14 @@ void _applyToOffer(
 ) async {
   try {
     await viewModel.applyToOffer(offerId);
+    // ahora tomate una michelada y a esperar
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Te has postulado exitosamente')),
       );
     }
   } catch (e) {
+    // por si la plataforma ya te las tira, mejor busca otra!!
     if (context.mounted) {
       ScaffoldMessenger.of(
         context,

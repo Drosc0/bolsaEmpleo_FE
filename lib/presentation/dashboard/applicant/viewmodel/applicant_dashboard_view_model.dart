@@ -50,7 +50,7 @@ class ApplicantDashboardViewModel extends ChangeNotifier {
   Future<void> applyToOffer(int offerId) async {
     try {
       await applicationsRepository.applyToJob(offerId);
-      // Refresh applications list
+      // Refresca applications list
       _applications = await applicationsRepository.getMyApplications();
       notifyListeners();
     } catch (e) {

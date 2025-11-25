@@ -50,7 +50,7 @@ class _EditApplicantProfileDialogState
       text: widget.profile.portfolioUrl,
     );
 
-    // Initialize lists from profile
+    //lista inicializada del profile
     _skills = List.from(widget.profile.skills);
     _experience = List.from(widget.profile.experience);
   }
@@ -155,7 +155,7 @@ class _EditApplicantProfileDialogState
                   key: _formKey,
                   child: TabBarView(
                     children: [
-                      // Tab 1: Quien eres. (Aunque el email y nombre no se tocan).
+                      // Tab 1: Quien eres. (Aunque el email y nombre no se tocan, de momento).
                       SingleChildScrollView(
                         child: Column(
                           children: [

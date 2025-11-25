@@ -28,9 +28,7 @@ class AuthViewModel extends ChangeNotifier {
   String? get userRole => _userRole;
   String? get errorMessage => _errorMessage;
 
-  // ==========================================================
   // VERIFICAR ESTADO
-  // ==========================================================
   Future<void> checkAuthStatus() async {
     final isAuthenticated = await repository.isAuthenticated();
     _status = isAuthenticated
@@ -39,14 +37,12 @@ class AuthViewModel extends ChangeNotifier {
 
     // Opcional: Si está logueado, podríamos intentar leer el rol guardado
     // (requiere que lo guardemos en el storage junto al token).
-    // Por ahora, lo dejaremos simple
+    // Pa otro dia, lo dejaremos simple
 
     notifyListeners();
   }
 
-  // ==========================================================
   // LOGIN
-  // ==========================================================
   Future<bool> login(String email, String password) async {
     _status = AuthStatus.authenticating;
     _errorMessage = null;
@@ -73,9 +69,7 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // ==========================================================
   // LOGOUT
-  // ==========================================================
   Future<void> logout() async {
     await repository.logout();
     _userRole = null;
@@ -83,9 +77,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ==========================================================
   // REGISTRO
-  // ==========================================================
   Future<bool> register(String email, String password, String role) async {
     _status = AuthStatus.authenticating;
     _errorMessage = null;

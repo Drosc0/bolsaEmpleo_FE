@@ -29,9 +29,10 @@ class ApplicationsRepository {
   Future<void> applyToJob(int offerId) async {
     final token = await storageService.readToken();
 
-    // Intento 4: El usuario reporta "property jobid should not exist".
+    // "property jobid should not exist".
     // Esto significa que 'jobId' tampoco es correcto.
-    // Probaremos con 'jobOfferId', que es otro nombre común, en algun momento sonara la flauta.
+    // A intentarlo con 'jobOfferId', en algun momento sonara la flauta, 
+    // es lo que pasa si le pides ayuda a la ia (que cambia nombres).
 
     await apiService.post('/recruitment/applications', {
       'jobOfferId': offerId,

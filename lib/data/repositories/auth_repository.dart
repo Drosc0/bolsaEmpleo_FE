@@ -56,7 +56,7 @@ class AuthRepository {
   // ==========================================================
   Future<void> logout() async {
     await storageService.deleteToken();
-    //await storageService.deleteUserId(); // Asumiendo que también se añade deleteUserId
+    //await storageService.deleteUserId(); // Si se añade deleteUserId
     // Nota: El backend no necesita ser notificado en este caso (solo borrado local)
   }
 

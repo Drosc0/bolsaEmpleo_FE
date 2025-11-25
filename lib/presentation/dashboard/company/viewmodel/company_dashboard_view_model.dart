@@ -31,6 +31,7 @@ class CompanyDashboardViewModel extends ChangeNotifier {
 
     try {
       // Pido el perfil y las ofertas a la vez, para acabar antes.
+      // que los nenucos de hoy no saben esperar
       final results = await Future.wait([
         companyRepository.getMyCompanyProfile(),
         companyRepository.getMyJobOffers(),
@@ -54,6 +55,7 @@ class CompanyDashboardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // para ver a quien engañas, creas nuevo pacto con el diablo
   Future<void> createOffer(Map<String, dynamic> offerData) async {
     try {
       final newOffer = await companyRepository.createJobOffer(offerData);
@@ -75,6 +77,7 @@ class CompanyDashboardViewModel extends ChangeNotifier {
       _companyProfile = updatedProfile;
       notifyListeners();
     } catch (e) {
+      // el mensaje que mas vi durante el desarrollo
       print('ERROR UPDATING PROFILE: $e');
       _errorMessage = 'Error al actualizar perfil: $e';
       notifyListeners();

@@ -19,8 +19,7 @@ class JobOffer {
 
   // Método de fábrica para mapear de JSON (backend)
   factory JobOffer.fromJson(Map<String, dynamic> json) {
-    // He ajustado el manejo de 'companyName' para el backend NestJS/Supabase
-    // que normalmente devuelve una relación anidada.
+    
     return JobOffer(
       id: json['id'] as int,
       title: json['title'] as String,

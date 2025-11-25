@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _submit(AuthViewModel viewModel) async {
-    // Es importante verificar el contexto para evitar errores si la página se desmonta
+    // importante verificar el contexto para evitar errores si la página se desmonta
     if (!mounted) return;
 
     if (_formKey.currentState!.validate()) {

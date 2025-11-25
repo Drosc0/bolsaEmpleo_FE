@@ -9,7 +9,7 @@ class ProfileRepository {
 
   ProfileRepository({required this.apiService, required this.storageService});
 
-  // Quien soy? A donde voy? Aqui pido mis datos.
+  // Quien soy? A donde voy? de donde vengo? Aqui pido mis datos.
   Future<Profile> getMyProfile() async {
     final token = await storageService.readToken();
 

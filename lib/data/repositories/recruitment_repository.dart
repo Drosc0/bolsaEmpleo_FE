@@ -8,10 +8,8 @@ class RecruitmentRepository {
 
   RecruitmentRepository({required this.apiService});
 
-  // ==========================================================
   // Obtención de Ofertas desde NestJS
   // Endpoint: GET /api/job-offers/latest
-  // ==========================================================
   Future<List<JobOffer>> getLatestJobOffers() async {
     final response = await apiService.get('/recruitment/offers');
 
@@ -22,12 +20,10 @@ class RecruitmentRepository {
     return jsonList.map((json) => JobOffer.fromJson(json)).toList();
   }
 
-  // ==========================================================
   // Obtención de Estadísticas desde NestJS
   // Endpoint: GET /api/stats
-  // ==========================================================
   Future<AppStats> getAppStats() async {
-    // Nota: Esta ruta debería ser pública para la Home Page
+    // Esta ruta debería ser pública para la Home Page
     final response = await apiService.get('/stats');
 
     final Map<String, dynamic> json = jsonDecode(response.body);

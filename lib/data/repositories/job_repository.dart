@@ -13,10 +13,6 @@ class JobRepository {
   Future<List<JobOffer>> getJobOffers() async {
     final token = await storageService.readToken();
 
-    // Assuming this endpoint returns all available offers for applicants
-    // If the previous endpoint was filtered by company, we might need a different one
-    // or the backend handles it based on role.
-    // Based on user request "comprueba en el back", I'm assuming standard REST conventions.
     final response = await apiService.get('/recruitment/offers', token: token);
 
     final List<dynamic> jsonList = jsonDecode(response.body);
