@@ -42,7 +42,7 @@ class _OfferDetailsDialogState extends State<OfferDetailsDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Estado actualizado a $newStatus')),
         );
-        _loadApplications(); // Reload list
+        _loadApplications(); // Recarga lista
       }
     } catch (e) {
       if (mounted) {

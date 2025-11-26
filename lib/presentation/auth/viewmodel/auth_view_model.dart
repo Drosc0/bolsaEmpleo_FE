@@ -36,7 +36,7 @@ class AuthViewModel extends ChangeNotifier {
         : AuthStatus.unauthenticated;
 
     // Un-lo-dudo: Si está logueado, se podria intentar leer el rol guardado
-    // (requiere que lo guardemos en el storage junto al token).
+    // (requiere que se guarde en el storage junto al token).
     // Pa otro dia, lo dejaremos simple
 
     notifyListeners();

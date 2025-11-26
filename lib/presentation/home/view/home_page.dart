@@ -196,9 +196,7 @@ class _MobileLayout extends StatelessWidget {
   }
 }
 
-// ==========================================================
 // TABLET/WEB (Diseño de Dos Columnas)
-// ==========================================================
 
 class _TabletWebLayout extends StatelessWidget {
   final HomeViewModel viewModel;
@@ -219,7 +217,7 @@ class _TabletWebLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Ajuste de altura de tarjetas para rango específico (900px - 1240px)
+    // altura de tarjetas para (900px - 1240px)
     double childAspectRatio = 1.1; // Valor por defecto
     if (screenWidth >= 900 && screenWidth <= 1240) {
       childAspectRatio = 0.85; // Tarjetas más altas
@@ -301,9 +299,7 @@ class _TabletWebLayout extends StatelessWidget {
   }
 }
 
-// ==========================================================
-// SECCIÓN REUTILIZABLE (Estadísticas y Botones)
-// ==========================================================
+//REUTILIZABLE (Estadísticas y Botones)
 
 class _StatsAndAuthSection extends StatelessWidget {
   final AppStats? stats;
