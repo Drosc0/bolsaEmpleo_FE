@@ -12,7 +12,7 @@ class OfferCard extends StatelessWidget {
     return Card(
       // CardTheme esta app_theme.dart
       child: InkWell(
-        borderRadius: BorderRadius.circular(16), // Matches CardTheme radius
+        borderRadius: BorderRadius.circular(16), // CardTheme radius
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -40,7 +40,7 @@ class OfferCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
 
-              // Ubicación
+              // Ubicación, donde te van a encerrar
               _buildInfoRow(
                 context,
                 icon: Icons.location_on,
@@ -48,7 +48,7 @@ class OfferCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
 
-              // Rango Salarial
+              // Rango Salarial, para la caridad
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

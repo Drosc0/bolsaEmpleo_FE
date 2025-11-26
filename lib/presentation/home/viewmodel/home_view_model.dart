@@ -34,15 +34,15 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Obtener ofertas REALES
+      // 1. Obtener ofertas
       _offers = await recruitmentRepository.getLatestJobOffers();
 
-      // 2. Obtener estadísticas REALES
+      // 2. Obtener estadísticas
       _stats = await recruitmentRepository.getAppStats();
 
       _state = ViewState.loaded;
     } catch (e) {
-      // Ahora este error capturará problemas reales de conexión o del backend
+      // por si no enchufa o juega al telefono escacharrao con BE
       _errorMessage = 'Fallo al cargar datos del backend: ${e.toString()}';
       _state = ViewState.error;
       print('Error en HomeViewModel: $e');
