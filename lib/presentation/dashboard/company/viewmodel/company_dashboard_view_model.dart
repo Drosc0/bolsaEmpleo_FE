@@ -16,12 +16,14 @@ class CompanyDashboardViewModel extends ChangeNotifier {
   DashboardState _state = DashboardState.loading;
   CompanyProfile? _companyProfile;
   List<JobOffer> _jobOffers = [];
+  List<Application> _recentApplications = [];
   String? _errorMessage;
 
   // Getters
   DashboardState get state => _state;
   CompanyProfile? get companyProfile => _companyProfile;
   List<JobOffer> get jobOffers => _jobOffers;
+  List<Application> get recentApplications => _recentApplications;
   String? get errorMessage => _errorMessage;
 
   Future<void> fetchDashboardData() async {
@@ -45,6 +47,10 @@ class CompanyDashboardViewModel extends ChangeNotifier {
       _jobOffers = allOffers
           .where((offer) => offer.companyId == _companyProfile?.id)
           .toList();
+
+      // Fetch recent applications for all offers
+      await fetchRecentApplications();
+
       _state = DashboardState.loaded;
     } catch (e) {
       print('ERROR COMPANY DASHBOARD: $e');
@@ -53,6 +59,25 @@ class CompanyDashboardViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<void> fetchRecentApplications() async {
+    try {
+      List<Application> allApplications = [];
+
+      // Fetch applications for each job offer
+      for (final offer in _jobOffers) {
+        final apps = await companyRepository.getApplicationsForOffer(offer.id);
+        allApplications.addAll(apps);
+      }
+
+      // Sort by appliedAt date (most recent first) and take top 10
+      allApplications.sort((a, b) => b.appliedAt.compareTo(a.appliedAt));
+      _recentApplications = allApplications.take(10).toList();
+    } catch (e) {
+      print('ERROR FETCHING RECENT APPLICATIONS: $e');
+      _recentApplications = [];
+    }
   }
 
   // para ver a quien engañas, creas nuevo pacto con el diablo

@@ -6,6 +6,7 @@ class JobOffer {
   final String location;
   final String salaryRange;
   final String description;
+  final DateTime createdAt;
 
   JobOffer({
     required this.id,
@@ -15,11 +16,11 @@ class JobOffer {
     required this.location,
     required this.salaryRange,
     required this.description,
+    required this.createdAt,
   });
 
   // Método de fábrica para mapear de JSON (backend)
   factory JobOffer.fromJson(Map<String, dynamic> json) {
-    
     return JobOffer(
       id: json['id'] as int,
       title: json['title'] as String,
@@ -28,6 +29,7 @@ class JobOffer {
       location: json['location'] as String,
       salaryRange: json['salaryRange'] as String,
       description: json['description'] as String? ?? 'Sin descripción',
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 }

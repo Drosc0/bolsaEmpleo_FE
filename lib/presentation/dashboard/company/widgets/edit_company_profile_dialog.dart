@@ -54,6 +54,7 @@ class _EditCompanyProfileDialogState extends State<EditCompanyProfileDialog> {
     try {
       final viewModel = widget.viewModel;
       await viewModel.updateCompanyProfile({
+        'companyName': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
         'website': _websiteController.text.trim(),
         'location': _locationController.text.trim(),
@@ -109,11 +110,8 @@ class _EditCompanyProfileDialogState extends State<EditCompanyProfileDialog> {
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
-                    labelText: 'Nombre de la Empresa (No modificable)',
-                    prefixIcon: Icon(Icons.lock_outline),
+                    labelText: 'Nombre de la Empresa',
                   ),
-                  readOnly: true,
-                  enabled: false,
                 ),
                 const SizedBox(height: 16),
 

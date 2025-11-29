@@ -100,6 +100,8 @@ class _EditApplicantProfileDialogState
 
       // Empaquetamos todo para mandarlo al servidor.
       final profileData = {
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'linkedinUrl': _linkedinController.text.trim(),
         'portfolioUrl': _portfolioController.text.trim(),
@@ -175,11 +177,8 @@ class _EditApplicantProfileDialogState
                                   child: TextFormField(
                                     controller: _firstNameController,
                                     decoration: const InputDecoration(
-                                      labelText: 'Nombre (No modificable)',
-                                      prefixIcon: Icon(Icons.lock_outline),
+                                      labelText: 'Nombre',
                                     ),
-                                    readOnly: true,
-                                    enabled: false,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -187,11 +186,8 @@ class _EditApplicantProfileDialogState
                                   child: TextFormField(
                                     controller: _lastNameController,
                                     decoration: const InputDecoration(
-                                      labelText: 'Apellido (No modificable)',
-                                      prefixIcon: Icon(Icons.lock_outline),
+                                      labelText: 'Apellido',
                                     ),
-                                    readOnly: true,
-                                    enabled: false,
                                   ),
                                 ),
                               ],
