@@ -7,11 +7,13 @@ import '../viewmodel/company_dashboard_view_model.dart';
 class OfferDetailsDialog extends StatefulWidget {
   final JobOffer offer;
   final CompanyDashboardViewModel viewModel;
+  final VoidCallback? onStatusChanged;
 
   const OfferDetailsDialog({
     super.key,
     required this.offer,
     required this.viewModel,
+    this.onStatusChanged,
   });
 
   @override
@@ -43,6 +45,7 @@ class _OfferDetailsDialogState extends State<OfferDetailsDialog> {
           SnackBar(content: Text('Estado actualizado a $newStatus')),
         );
         _loadApplications(); // Recarga lista
+        widget.onStatusChanged?.call(); // Notifica al padre
       }
     } catch (e) {
       if (mounted) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'viewmodel/company_dashboard_view_model.dart';
+import '../../home/viewmodel/home_view_model.dart';
 import '../../../data/repositories/company_repository.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
@@ -284,6 +285,10 @@ class _CompanyDashboardContent extends StatelessWidget {
                                                       OfferDetailsDialog(
                                                         offer: offer,
                                                         viewModel: viewModel,
+                                                        onStatusChanged: () {
+                                                          viewModel
+                                                              .fetchDashboardData();
+                                                        },
                                                       ),
                                                 );
                                               },
@@ -354,6 +359,11 @@ class _CreateOfferFormState extends State<_CreateOfferForm> {
       _salaryController.clear();
 
       if (mounted) {
+        // Recargar las ofertas en el HomeViewModel para que se vean en el menú principal
+        context.read<HomeViewModel>().fetchInitialData();
+        // Recargar el dashboard para ver la nueva oferta en la actividad reciente
+        await viewModel.fetchDashboardData();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Oferta creada exitosamente')),
         );

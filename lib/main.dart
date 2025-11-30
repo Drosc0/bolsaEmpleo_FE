@@ -15,9 +15,7 @@ import 'presentation/home/viewmodel/home_view_model.dart';
 import 'presentation/auth/viewmodel/auth_view_model.dart';
 import 'presentation/common/viewmodel/theme_view_model.dart';
 
-// -----------------------------------------------------------------------------
 // 1. PUNTO DE ENTRADA DE LA APLICACIÓN
-// -----------------------------------------------------------------------------
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,9 +42,7 @@ void main() {
   );
 }
 
-// -----------------------------------------------------------------------------
 // 2. WIDGET PRINCIPAL DE LA APLICACIÓN (MyApp)
-// -----------------------------------------------------------------------------
 
 class MyApp extends StatelessWidget {
   final RecruitmentRepository recruitmentRepository;

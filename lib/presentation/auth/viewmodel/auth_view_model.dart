@@ -38,6 +38,10 @@ class AuthViewModel extends ChangeNotifier {
     // Un-lo-dudo: Si está logueado, se podria intentar leer el rol guardado
     // (requiere que se guarde en el storage junto al token).
     // Pa otro dia, lo dejaremos simple
+    //al final se hizo y hera mas simple de lo que parecia a primera vista XD
+    if (isAuthenticated) {
+      _userRole = await repository.getUserRole();
+    }
 
     notifyListeners();
   }

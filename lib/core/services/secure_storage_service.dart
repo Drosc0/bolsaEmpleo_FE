@@ -28,4 +28,17 @@ class SecureStorageService {
     final idString = await _storage.read(key: 'user_id');
     return idString != null ? int.tryParse(idString) : null;
   }
+
+  // Para guardar el Rol del usuario
+  Future<void> saveUserRole(String role) async {
+    await _storage.write(key: 'user_role', value: role);
+  }
+
+  Future<String?> readUserRole() async {
+    return await _storage.read(key: 'user_role');
+  }
+
+  Future<void> deleteUserRole() async {
+    await _storage.delete(key: 'user_role');
+  }
 }

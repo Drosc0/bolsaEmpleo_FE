@@ -19,9 +19,10 @@ class AuthRepository {
     final Map<String, dynamic> json = jsonDecode(response.body);
     final tokens = UserTokens.fromJson(json);
 
-    // Almacenar el token y el ID al loguearse con éxito
+    // Almacenar el token, el ID y el Rol al loguearse con éxito
     await storageService.saveToken(tokens.accessToken);
     await storageService.saveUserId(tokens.userId);
+    await storageService.saveUserRole(tokens.userRole);
 
     return tokens;
   }
@@ -40,9 +41,10 @@ class AuthRepository {
     final Map<String, dynamic> json = jsonDecode(response.body);
     final tokens = UserTokens.fromJson(json);
 
-    // Almacenar el token y el ID al registrarse con éxito
+    // Almacenar el token, el ID y el Rol al registrarse con éxito
     await storageService.saveToken(tokens.accessToken);
     await storageService.saveUserId(tokens.userId);
+    await storageService.saveUserRole(tokens.userRole);
 
     return tokens;
   }
@@ -50,14 +52,19 @@ class AuthRepository {
   // LÓGICA DE CIERRE DE SESIÓN
   Future<void> logout() async {
     await storageService.deleteToken();
+    await storageService.deleteUserRole();
     //await storageService.deleteUserId(); // Si se añade deleteUserId
     // Nota: El backend no necesita ser notificado en este caso (solo borrado local)
   }
 
   // Verifica si el usuario está logueado (thunder)
   Future<bool> isAuthenticated() async {
-    final token = await storageService.readToken();//(flash)
+    final token = await storageService.readToken(); //(flash)
     // En una aplicación real, se debería validar la expiración del token aquí.
     return token != null;
+  }
+
+  Future<String?> getUserRole() async {
+    return await storageService.readUserRole();
   }
 }

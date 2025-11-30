@@ -8,6 +8,8 @@ import '../../../data/models/stats_model.dart';
 import '../../../data/models/job_offer_model.dart';
 import '../../auth/view/login_page.dart';
 import '../../common/viewmodel/theme_view_model.dart';
+import '../../dashboard/company/company_dashboard_page.dart';
+import '../../dashboard/applicant/applicant_dashboard_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -25,7 +27,7 @@ class HomePage extends StatelessWidget {
         title: const Text('Plataforma de Reclutamiento'),
         centerTitle: false,
         actions: [
-          // Theme Toggle Button (Always visible)
+          // Theme Toggle Button (siempre visible)
           IconButton(
             icon: Icon(
               themeViewModel.isDarkMode ? Icons.light_mode : Icons.dark_mode,
@@ -36,7 +38,7 @@ class HomePage extends StatelessWidget {
             tooltip: themeViewModel.isDarkMode ? 'Modo Claro' : 'Modo Oscuro',
           ),
 
-          // Login Icon (Visible only on small screens if not logged in)
+          // Login Icon (Visible solo en pequeñas y si no esta logeado)
           if (isSmallScreen && !authViewModel.isLoggedIn)
             IconButton(
               icon: const Icon(Icons.login),
@@ -49,7 +51,14 @@ class HomePage extends StatelessWidget {
               tooltip: 'Iniciar Sesión',
             ),
 
-          if (authViewModel.isLoggedIn)
+          if (authViewModel.isLoggedIn) ...[
+            IconButton(
+              icon: const Icon(Icons.dashboard),
+              onPressed: () {
+                _navigateToDashboard(context, authViewModel.userRole);
+              },
+              tooltip: 'Ir a mi Panel',
+            ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () {
@@ -57,6 +66,7 @@ class HomePage extends StatelessWidget {
               },
               tooltip: 'Cerrar Sesión',
             ),
+          ],
         ],
       ),
       body: Consumer<HomeViewModel>(
@@ -101,7 +111,7 @@ class HomePage extends StatelessWidget {
         isSmallScreen: isSmallScreen,
       );
     } else {
-      // 2. TABLET(Layout de dos columnas)/WEB(Layout de cuatro/seis columnas)
+      // 2. TABLET(dos columnas)/WEB(cuatro/seis columnas)
       int crossAxisCount;
       if (screenWidth >= 1600) {
         // pantallas extra grandes
@@ -123,11 +133,27 @@ class HomePage extends StatelessWidget {
       );
     }
   }
+
+  void _navigateToDashboard(BuildContext context, String? role) {
+    if (role == 'COMPANY' || role == 'empresa') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CompanyDashboardPage()),
+      );
+    } else if (role == 'APPLICANT' || role == 'aspirante') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ApplicantDashboardPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Rol de usuario desconocido')),
+      );
+    }
+  }
 }
 
-// ==========================================================
 // MÓVIL (Una Columna)
-// ==========================================================
 
 class _MobileLayout extends StatelessWidget {
   final HomeViewModel viewModel;
@@ -142,55 +168,60 @@ class _MobileLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // 1. Estadísticas y Enlace (Ocupa todo el ancho)
-          _StatsAndAuthSection(
-            stats: viewModel.stats,
-            isLoggedIn: isLoggedIn,
-            isSmallScreen: isSmallScreen,
-            isTablet: false,
-          ),
-          const SizedBox(height: 24),
-
-          // 2. Título de Ofertas
-          Text(
-            'Últimas Ofertas',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 16),
-
-          // 3. Ofertas (Una columna, 1 oferta por 'row')
-          if (viewModel.offers.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Text('No hay ofertas disponibles en este momento.'),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: viewModel.offers.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: OfferCard(
-                    offer: viewModel.offers[index],
-                    onTap: () => _showOfferDetails(
-                      context,
-                      viewModel.offers[index],
-                      isLoggedIn,
-                    ),
-                  ),
-                );
-              },
+    return RefreshIndicator(
+      onRefresh: () async {
+        await viewModel.fetchInitialData();
+      },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 1. Estadísticas y Enlace (Ocupa todo el ancho)
+            _StatsAndAuthSection(
+              stats: viewModel.stats,
+              isLoggedIn: isLoggedIn,
+              isSmallScreen: isSmallScreen,
+              isTablet: false,
             ),
-        ],
+            const SizedBox(height: 24),
+
+            // 2. Título de Ofertas
+            Text(
+              'Últimas Ofertas',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 16),
+
+            // 3. Ofertas (Una columna, 1 oferta por 'row')
+            if (viewModel.offers.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Text('No hay ofertas disponibles en este momento.'),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: viewModel.offers.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: OfferCard(
+                      offer: viewModel.offers[index],
+                      onTap: () => _showOfferDetails(
+                        context,
+                        viewModel.offers[index],
+                        isLoggedIn,
+                      ),
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -246,51 +277,56 @@ class _TabletWebLayout extends StatelessWidget {
 
         // COLUMNA 2/3 (Ofertas)
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Últimas Ofertas',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 16),
-
-                // GridView con ofertas (2, 4 o 6 por fila)
-                if (viewModel.offers.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Text(
-                        'No hay ofertas disponibles en este momento.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    ),
-                  )
-                else
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: viewModel.offers.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 20.0,
-                      mainAxisSpacing: 20.0,
-                      childAspectRatio: childAspectRatio,
-                    ),
-                    itemBuilder: (context, index) {
-                      return OfferCard(
-                        offer: viewModel.offers[index],
-                        onTap: () => _showOfferDetails(
-                          context,
-                          viewModel.offers[index],
-                          isLoggedIn,
-                        ),
-                      );
-                    },
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await viewModel.fetchInitialData();
+            },
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Últimas Ofertas',
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
-              ],
+                  const SizedBox(height: 16),
+
+                  // GridView con ofertas (2, 4 o 6 por fila)
+                  if (viewModel.offers.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text(
+                          'No hay ofertas disponibles en este momento.',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ),
+                    )
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: viewModel.offers.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 20.0,
+                        mainAxisSpacing: 20.0,
+                        childAspectRatio: childAspectRatio,
+                      ),
+                      itemBuilder: (context, index) {
+                        return OfferCard(
+                          offer: viewModel.offers[index],
+                          onTap: () => _showOfferDetails(
+                            context,
+                            viewModel.offers[index],
+                            isLoggedIn,
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -379,13 +415,50 @@ class _StatsAndAuthSection extends StatelessWidget {
 
         // Mensaje si está logueado
         if (isLoggedIn)
-          Text(
-            '¡Bienvenido!',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge,
+          Column(
+            children: [
+              Text(
+                '¡Bienvenido!',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  final authViewModel = Provider.of<AuthViewModel>(
+                    context,
+                    listen: false,
+                  );
+                  _navigateToDashboard(context, authViewModel.userRole);
+                },
+                icon: const Icon(Icons.dashboard),
+                label: const Text('Ir a mi Panel'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+              ),
+            ],
           ),
       ],
     );
+  }
+
+  void _navigateToDashboard(BuildContext context, String? role) {
+    if (role == 'COMPANY' || role == 'empresa') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CompanyDashboardPage()),
+      );
+    } else if (role == 'APPLICANT' || role == 'aspirante') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ApplicantDashboardPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Rol de usuario desconocido')),
+      );
+    }
   }
 }
 
