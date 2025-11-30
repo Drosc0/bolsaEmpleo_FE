@@ -61,6 +61,9 @@ class CompanyDashboardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<dynamic> _recentActivity = [];
+  List<dynamic> get recentActivity => _recentActivity;
+
   Future<void> fetchRecentApplications() async {
     try {
       List<Application> allApplications = [];
@@ -71,12 +74,37 @@ class CompanyDashboardViewModel extends ChangeNotifier {
         allApplications.addAll(apps);
       }
 
-      // Sort by appliedAt date (most recent first) and take top 10
-      allApplications.sort((a, b) => b.appliedAt.compareTo(a.appliedAt));
-      _recentApplications = allApplications.take(10).toList();
+      _recentApplications = allApplications;
+
+      // Combine offers and applications
+      _recentActivity = [..._jobOffers, ..._recentApplications];
+
+      // Sort by date (most recent first)
+      _recentActivity.sort((a, b) {
+        DateTime dateA;
+        DateTime dateB;
+
+        if (a is JobOffer) {
+          dateA = a.createdAt;
+        } else {
+          dateA = (a as Application).appliedAt;
+        }
+
+        if (b is JobOffer) {
+          dateB = b.createdAt;
+        } else {
+          dateB = (b as Application).appliedAt;
+        }
+
+        return dateB.compareTo(dateA);
+      });
+
+      // Take top 10 items
+      _recentActivity = _recentActivity.take(10).toList();
     } catch (e) {
       print('ERROR FETCHING RECENT APPLICATIONS: $e');
       _recentApplications = [];
+      _recentActivity = [];
     }
   }
 

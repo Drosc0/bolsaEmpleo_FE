@@ -158,8 +158,8 @@ class _OfferDetailsDialogState extends State<OfferDetailsDialog> {
                     'salaryRange': salaryController.text.trim(),
                   });
                   if (mounted) {
-                    Navigator.pop(context); // Close edit dialog
-                    Navigator.pop(context); // Close details dialog
+                    Navigator.pop(context); // cierra dialogo edicion
+                    Navigator.pop(context); // Cierra dialogo detalles
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Oferta actualizada exitosamente'),
@@ -299,12 +299,16 @@ class _OfferDetailsDialogState extends State<OfferDetailsDialog> {
                                 child: Text('Pendiente'),
                               ),
                               const PopupMenuItem(
-                                value: 'REVIEWING',
+                                value: 'IN_REVIEW',
                                 child: Text('En Revisión'),
                               ),
                               const PopupMenuItem(
-                                value: 'ACCEPTED',
-                                child: Text('Aceptado'),
+                                value: 'INTERVIEW',
+                                child: Text('Entrevista'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'HIRED',
+                                child: Text('Contratado'),
                               ),
                               const PopupMenuItem(
                                 value: 'REJECTED',

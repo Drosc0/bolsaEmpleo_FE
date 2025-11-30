@@ -6,6 +6,8 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/secure_storage_service.dart';
 import 'widgets/edit_company_profile_dialog.dart';
 import 'widgets/offer_details_dialog.dart';
+import '../../../data/models/job_offer_model.dart';
+import '../../../data/models/application_model.dart';
 
 class CompanyDashboardPage extends StatelessWidget {
   const CompanyDashboardPage({super.key});
@@ -151,33 +153,75 @@ class _CompanyDashboardContent extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Resumen Reciente',
+                                      'Actividad Reciente',
                                       style: Theme.of(
                                         context,
                                       ).textTheme.titleLarge,
                                     ),
                                     const SizedBox(height: 10),
                                     Expanded(
-                                      child: viewModel.jobOffers.isEmpty
+                                      child: viewModel.recentActivity.isEmpty
                                           ? const Center(
                                               child: Text(
-                                                'No hay ofertas recientes.',
+                                                'No hay actividad reciente.',
                                               ),
                                             )
                                           : ListView.builder(
-                                              itemCount: viewModel.jobOffers
-                                                  .take(3)
+                                              itemCount: viewModel
+                                                  .recentActivity
                                                   .length,
                                               itemBuilder: (context, index) {
-                                                final offer =
-                                                    viewModel.jobOffers[index];
-                                                return ListTile(
-                                                  title: Text(offer.title),
-                                                  subtitle: Text(
-                                                    offer.location,
-                                                  ),
-                                                  dense: true,
-                                                );
+                                                final item = viewModel
+                                                    .recentActivity[index];
+
+                                                if (item is JobOffer) {
+                                                  return ListTile(
+                                                    leading: CircleAvatar(
+                                                      backgroundColor:
+                                                          Theme.of(context)
+                                                              .colorScheme
+                                                              .secondaryContainer,
+                                                      child: Icon(
+                                                        Icons.work,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onSecondaryContainer,
+                                                      ),
+                                                    ),
+                                                    title: Text(item.title),
+                                                    subtitle: const Text(
+                                                      'Oferta Creada',
+                                                    ),
+                                                    dense: true,
+                                                  );
+                                                } else if (item
+                                                    is Application) {
+                                                  return ListTile(
+                                                    leading: CircleAvatar(
+                                                      child: Text(
+                                                        item
+                                                                .applicant
+                                                                ?.firstName
+                                                                .substring(
+                                                                  0,
+                                                                  1,
+                                                                ) ??
+                                                            'U',
+                                                      ),
+                                                    ),
+                                                    title: Text(
+                                                      item
+                                                              .applicant
+                                                              ?.fullName ??
+                                                          'Usuario Desconocido',
+                                                    ),
+                                                    subtitle: Text(
+                                                      'Postulación a ${item.jobOffer.title} - ${item.status}',
+                                                    ),
+                                                    dense: true,
+                                                  );
+                                                }
+                                                return const SizedBox.shrink();
                                               },
                                             ),
                                     ),
