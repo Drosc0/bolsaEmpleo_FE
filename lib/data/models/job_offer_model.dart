@@ -24,7 +24,7 @@ class JobOffer {
     return JobOffer(
       id: json['id'] as int,
       title: json['title'] as String,
-      companyName: json['company']?['name'] as String? ?? 'N/A',
+      companyName: json['company']?['companyName'] as String? ?? 'N/A',
       companyId: json['company']?['id'] as int?,
       location: json['location'] as String,
       salaryRange: json['salaryRange'] as String,

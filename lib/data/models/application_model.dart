@@ -22,8 +22,8 @@ class Application {
       jobOffer: JobOffer.fromJson(json['jobOffer'] as Map<String, dynamic>),
       status: json['status'] as String,
       appliedAt: DateTime.parse(json['appliedAt'] as String),
-      applicant: json['applicant'] != null
-          ? Profile.fromJson(json['applicant'] as Map<String, dynamic>)
+      applicant: json['aspirantProfile'] != null
+          ? Profile.fromJson(json['aspirantProfile'] as Map<String, dynamic>)
           : null,
     );
   }
