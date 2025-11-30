@@ -239,7 +239,7 @@ Arquitectura de N-Capas.
 #### Para Empresas:
 1.  **Registro**: Acceder a la pantalla de registro, seleccionar rol "Empresa" y completar datos corporativos.
 2.  **Inicio de Sesión**: Introducir email y contraseña. El sistema redirige automáticamente al dashboard de empresa.
-3.  **Crear Oferta**: En el dashboard, pulsar el botón "+" para crear una nueva oferta de empleo.
+3.  **Crear Oferta**: En el dashboard, introducir los datos de la nueva oferta en el formulario y pulsar el botón "Crear oferta" para crear una nueva oferta de empleo.
 4.  **Gestionar Ofertas**: Ver, editar o eliminar ofertas existentes desde el dashboard.
 5.  **Ver Candidatos**: Acceder a los detalles de una oferta para ver la lista de candidatos que han aplicado.
 6.  **Editar Perfil**: Actualizar información de la empresa desde el dashboard.
@@ -260,6 +260,7 @@ Se ha logrado desarrollar un sistema funcional que cumple con los objetivos de c
 *   Notificaciones Push.
 *   Integración con LinkedIn para importar perfil.
 *   Sistema de pagos para destacar ofertas.
+*   Implementar IA para sugerir candidatos a empresas.
 
 ---
 
