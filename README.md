@@ -130,12 +130,15 @@ El sistema abarcará la gestión completa del ciclo de vida de una oferta de emp
 
 ### 4.2 Catálogo de requisitos
 #### 4.2.1 Requisitos funcionales
-*   **RF 1**: Gestión de Usuarios (Registro e Inicio de Sesión).
-*   **RF 2**: Gestión de Perfil de Empresa (Edición de datos, logo).
-*   **RF 3**: Gestión de Perfil de Candidato (Edición de datos, CV).
+*   **RF 1**: Gestión de Usuarios (Registro e Inicio de Sesión con JWT).
+*   **RF 2**: Gestión de Perfil de Empresa (Edición de datos corporativos).
+*   **RF 3**: Gestión de Perfil de Candidato (Edición de datos personales y profesionales).
 *   **RF 4**: Gestión de Ofertas (Crear, Editar, Eliminar, Listar).
 *   **RF 5**: Postulación a Ofertas (Candidatos aplican a ofertas).
 *   **RF 6**: Visualización de Candidatos (Empresas ven quién aplicó).
+*   **RF 7**: Dashboards diferenciados por rol (Empresa y Candidato).
+*   **RF 8**: Navegación entre página principal y dashboards según autenticación.
+*   **RF 9**: Persistencia de sesión mediante almacenamiento seguro.
 
 #### 4.2.2 Requisitos no funcionales
 *   **RNF 1**: Seguridad (Contraseñas encriptadas, JWT).
@@ -188,15 +191,31 @@ Arquitectura de N-Capas.
 
 ## Capítulo 7. Implementación del sistema
 
+### 7.1 Estándares y normas seguidos
+*   **Clean Architecture**: Separación en capas (Core, Data, Presentation).
+*   **Provider Pattern**: Gestión de estado con Provider para ViewModels.
+*   **Repository Pattern**: Abstracción del acceso a datos.
+
 ### 7.2 Lenguajes de programación
-*   **Dart**: Versión 3.x (Frontend).
-*   **TypeScript**: Versión 5.x (Backend).
+*   **Dart**: Versión 3.x (Frontend Flutter).
+*   **TypeScript**: Versión 5.x (Backend NestJS).
 
 ### 7.3 Herramientas y programas usados
 *   **Visual Studio Code**: IDE principal.
 *   **Postman/Insomnia**: Pruebas de API.
-*   **Docker**: Contenerización de la base de datos.
 *   **Git**: Control de versiones.
+*   **Flutter DevTools**: Depuración y análisis de rendimiento.
+
+### 7.4 Estructura del Frontend
+*   **lib/core**: Servicios fundamentales (ApiService, SecureStorageService), temas y utilidades.
+*   **lib/data**: Modelos de datos y repositorios (AuthRepository, RecruitmentRepository, ApplicationsRepository, etc.).
+*   **lib/presentation**: Interfaces de usuario organizadas por funcionalidad:
+    *   **auth**: Pantallas de registro y login con AuthViewModel.
+    *   **home**: Página principal con listado de ofertas.
+    *   **dashboard/company**: Dashboard de empresa con gestión de ofertas y visualización de candidatos.
+    *   **dashboard/applicant**: Dashboard de candidato con gestión de perfil y aplicaciones.
+    *   **common**: Componentes compartidos y ThemeViewModel.
+    *   **shared**: Widgets reutilizables.
 
 ---
 
@@ -204,13 +223,30 @@ Arquitectura de N-Capas.
 
 ### 8.1 Manual de instalación
 1.  Clonar el repositorio.
-2.  Backend: `npm install` -> Configurar `.env` -> `npm run start:dev`.
-3.  Frontend: `flutter pub get` -> `flutter run`.
+2.  Backend: `cd bolsaEmpleo_BE` → `npm install` → Configurar `.env` → `npm run start:dev`.
+3.  Frontend: `cd bolsaEmpleo_FE` → `flutter pub get` → `flutter run`.
 
 ### 8.2 Manual de usuario
-*   **Registro**: Acceder a la pantalla de registro, seleccionar rol y completar datos.
-*   **Empresa**: Ir al dashboard, pulsar "+" para nueva oferta.
-*   **Candidato**: Navegar por la lista de ofertas, pulsar en una y dar a "Aplicar".
+
+#### Para Candidatos:
+1.  **Registro**: Acceder a la pantalla de registro, seleccionar rol "Candidato" y completar datos personales.
+2.  **Inicio de Sesión**: Introducir email y contraseña. El sistema redirige automáticamente al dashboard de candidato.
+3.  **Explorar Ofertas**: Desde el dashboard o la página principal, navegar por la lista de ofertas disponibles.
+4.  **Aplicar a Ofertas**: Pulsar en una oferta para ver detalles y hacer clic en "Aplicar".
+5.  **Gestionar Perfil**: Desde el dashboard, editar información personal y profesional.
+6.  **Ver Aplicaciones**: Consultar el estado de las postulaciones realizadas.
+
+#### Para Empresas:
+1.  **Registro**: Acceder a la pantalla de registro, seleccionar rol "Empresa" y completar datos corporativos.
+2.  **Inicio de Sesión**: Introducir email y contraseña. El sistema redirige automáticamente al dashboard de empresa.
+3.  **Crear Oferta**: En el dashboard, pulsar el botón "+" para crear una nueva oferta de empleo.
+4.  **Gestionar Ofertas**: Ver, editar o eliminar ofertas existentes desde el dashboard.
+5.  **Ver Candidatos**: Acceder a los detalles de una oferta para ver la lista de candidatos que han aplicado.
+6.  **Editar Perfil**: Actualizar información de la empresa desde el dashboard.
+
+#### Navegación General:
+*   **Botón "Go to Dashboard"**: Disponible en la página principal cuando el usuario está autenticado, permite volver al dashboard correspondiente según el rol.
+*   **Modo Oscuro/Claro**: Toggle disponible en la interfaz para cambiar el tema visual.
 
 ---
 
