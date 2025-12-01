@@ -1,10 +1,10 @@
 
 # Project Documentation: Employment Exchange
 
-[![Español](https://img.icons8.com/color/48/spain.png)](README.md) | [![English](https://img.icons8.com/color/48/great-britain.png )](README_EN.md)
+[![Español](https://img.icons8.com/color/48/spain.png)](README.md)   [![English](https://img.icons8.com/color/48/great-britain.png )](README_EN.md)
 
 ## Acknowledgments
-*(This section is optional. To be completed by the author if they wish to dedicate the project to individuals, institutions, or companies).*
+*To no one, at the moment.*
 
 ---
 
