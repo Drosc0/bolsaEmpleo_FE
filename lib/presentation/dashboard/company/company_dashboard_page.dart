@@ -52,267 +52,307 @@ class _CompanyDashboardContent extends StatelessWidget {
                 ],
               ),
             )
-          : Row(
-              children: [
-                // COLUMNA 1: Datos de la Empresa y Edición
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.all(24.0),
-                    color: Theme.of(context).colorScheme.surface,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primaryContainer,
-                            child: Icon(
-                              Icons.business,
-                              size: 40,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: Text(
-                            viewModel.companyProfile?.companyName ?? 'Empresa',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Divider(),
-                        const SizedBox(height: 16),
-                        _ProfileInfoRow(
-                          icon: Icons.description,
-                          label: 'Descripción',
-                          value:
-                              viewModel.companyProfile?.description ??
-                              'Sin descripción',
-                        ),
-                        const SizedBox(height: 12),
-                        _ProfileInfoRow(
-                          icon: Icons.language,
-                          label: 'Sitio Web',
-                          value:
-                              viewModel.companyProfile?.website ??
-                              'No especificado',
-                        ),
-                        const SizedBox(height: 12),
-                        _ProfileInfoRow(
-                          icon: Icons.location_on,
-                          label: 'Ubicación',
-                          value:
-                              viewModel.companyProfile?.location ??
-                              'No especificada',
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => EditCompanyProfileDialog(
-                                  profile: viewModel.companyProfile!,
-                                  viewModel: viewModel,
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.edit),
-                            label: const Text('Modificar Datos'),
-                          ),
-                        ),
-                        const Spacer(),
-                        SizedBox(),
-                      ],
-                    ),
-                  ),
-                ),
-                const VerticalDivider(width: 1),
-
-                // COLUMNA 2: Gestión de Ofertas
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    children: [
-                      // FILA 1: Ofertas Recientes y Crear Oferta
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          children: [
-                            // Sub-Columna 1: Ofertas Recientes (Resumen)
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Actividad Reciente',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleLarge,
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Expanded(
-                                      child: viewModel.recentActivity.isEmpty
-                                          ? const Center(
-                                              child: Text(
-                                                'No hay actividad reciente.',
-                                              ),
-                                            )
-                                          : ListView.builder(
-                                              itemCount: viewModel
-                                                  .recentActivity
-                                                  .length,
-                                              itemBuilder: (context, index) {
-                                                final item = viewModel
-                                                    .recentActivity[index];
-
-                                                if (item is JobOffer) {
-                                                  return ListTile(
-                                                    leading: CircleAvatar(
-                                                      backgroundColor:
-                                                          Theme.of(context)
-                                                              .colorScheme
-                                                              .secondaryContainer,
-                                                      child: Icon(
-                                                        Icons.work,
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .onSecondaryContainer,
-                                                      ),
-                                                    ),
-                                                    title: Text(item.title),
-                                                    subtitle: const Text(
-                                                      'Oferta Creada',
-                                                    ),
-                                                    dense: true,
-                                                  );
-                                                } else if (item
-                                                    is Application) {
-                                                  return ListTile(
-                                                    leading: CircleAvatar(
-                                                      child: Text(
-                                                        item
-                                                                .applicant
-                                                                ?.firstName
-                                                                .substring(
-                                                                  0,
-                                                                  1,
-                                                                ) ??
-                                                            'U',
-                                                      ),
-                                                    ),
-                                                    title: Text(
-                                                      item
-                                                              .applicant
-                                                              ?.fullName ??
-                                                          'Usuario Desconocido',
-                                                    ),
-                                                    subtitle: Text(
-                                                      'Postulación a ${item.jobOffer.title} - ${item.status}',
-                                                    ),
-                                                    dense: true,
-                                                  );
-                                                }
-                                                return const SizedBox.shrink();
-                                              },
-                                            ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const VerticalDivider(width: 1),
-                            // Sub-Columna 2: Formulario Crear Oferta
-                            Expanded(
-                              child: Card(
-                                elevation: 2,
-                                margin: const EdgeInsets.all(8.0),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: const _CreateOfferForm(),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(height: 1),
-
-                      // FILA 2: Todas las Ofertas Creadas
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: const EdgeInsets.all(16.0),
-                          width: double.infinity,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Todas mis Ofertas',
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                              const SizedBox(height: 10),
-                              Expanded(
-                                child: viewModel.jobOffers.isEmpty
-                                    ? const Center(
-                                        child: Text(
-                                          'No has creado ninguna oferta todavía.',
-                                        ),
-                                      )
-                                    : ListView.builder(
-                                        itemCount: viewModel.jobOffers.length,
-                                        itemBuilder: (context, index) {
-                                          final offer =
-                                              viewModel.jobOffers[index];
-                                          return Card(
-                                            margin: const EdgeInsets.only(
-                                              bottom: 12.0,
-                                            ),
-                                            child: InkWell(
-                                              onTap: () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) =>
-                                                      OfferDetailsDialog(
-                                                        offer: offer,
-                                                        viewModel: viewModel,
-                                                        onStatusChanged: () {
-                                                          viewModel
-                                                              .fetchDashboardData();
-                                                        },
-                                                      ),
-                                                );
-                                              },
-                                              child: ListTile(
-                                                title: Text(offer.title),
-                                                subtitle: Text(
-                                                  '${offer.location} - ${offer.salaryRange}',
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 800) {
+                  return _DesktopLayout(viewModel: viewModel);
+                } else {
+                  return _MobileLayout(viewModel: viewModel);
+                }
+              },
             ),
     );
+  }
+}
+
+class _DesktopLayout extends StatelessWidget {
+  final CompanyDashboardViewModel viewModel;
+
+  const _DesktopLayout({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // COLUMNA 1: Datos de la Empresa y Edición
+        Expanded(flex: 1, child: _CompanyProfileSection(viewModel: viewModel)),
+        const VerticalDivider(width: 1),
+
+        // COLUMNA 2: Gestión de Ofertas
+        Expanded(
+          flex: 2,
+          child: _ManagementSection(viewModel: viewModel, isMobile: false),
+        ),
+      ],
+    );
+  }
+}
+
+class _MobileLayout extends StatelessWidget {
+  final CompanyDashboardViewModel viewModel;
+
+  const _MobileLayout({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // SECCION 1: Perfil (Full width)
+          _CompanyProfileSection(viewModel: viewModel),
+          const Divider(height: 1),
+
+          // SECCION 2: Gestión de Ofertas
+          _ManagementSection(viewModel: viewModel, isMobile: true),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompanyProfileSection extends StatelessWidget {
+  final CompanyDashboardViewModel viewModel;
+
+  const _CompanyProfileSection({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24.0),
+      color: Theme.of(context).colorScheme.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: CircleAvatar(
+              radius: 40,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+              child: Icon(
+                Icons.business,
+                size: 40,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              viewModel.companyProfile?.companyName ?? 'Empresa',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 16),
+          _ProfileInfoRow(
+            icon: Icons.description,
+            label: 'Descripción',
+            value: viewModel.companyProfile?.description ?? 'Sin descripción',
+          ),
+          const SizedBox(height: 12),
+          _ProfileInfoRow(
+            icon: Icons.language,
+            label: 'Sitio Web',
+            value: viewModel.companyProfile?.website ?? 'No especificado',
+          ),
+          const SizedBox(height: 12),
+          _ProfileInfoRow(
+            icon: Icons.location_on,
+            label: 'Ubicación',
+            value: viewModel.companyProfile?.location ?? 'No especificada',
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditCompanyProfileDialog(
+                    profile: viewModel.companyProfile!,
+                    viewModel: viewModel,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.edit),
+              label: const Text('Modificar Datos'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ManagementSection extends StatelessWidget {
+  final CompanyDashboardViewModel viewModel;
+  final bool isMobile;
+
+  const _ManagementSection({required this.viewModel, required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
+    // Content for Recent Activity
+    final recentActivityContent = Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Actividad Reciente',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: viewModel.recentActivity.isEmpty
+                ? const Center(child: Text('No hay actividad reciente.'))
+                : ListView.builder(
+                    itemCount: viewModel.recentActivity.length,
+                    itemBuilder: (context, index) {
+                      final item = viewModel.recentActivity[index];
+
+                      if (item is JobOffer) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.secondaryContainer,
+                            child: Icon(
+                              Icons.work,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                          title: Text(item.title),
+                          subtitle: const Text('Oferta Creada'),
+                          dense: true,
+                        );
+                      } else if (item is Application) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            child: Text(
+                              item.applicant?.firstName.substring(0, 1) ?? 'U',
+                            ),
+                          ),
+                          title: Text(
+                            item.applicant?.fullName ?? 'Usuario Desconocido',
+                          ),
+                          subtitle: Text(
+                            'Postulación a ${item.jobOffer.title} - ${item.status}',
+                          ),
+                          dense: true,
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+
+    // Content for Create Offer Form
+    final createOfferContent = Card(
+      elevation: 2,
+      margin: const EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: const _CreateOfferForm(),
+      ),
+    );
+
+    // Content for All Offers
+    final allOffersContent = Container(
+      padding: const EdgeInsets.all(16.0),
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Todas mis Ofertas',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: viewModel.jobOffers.isEmpty
+                ? const Center(
+                    child: Text('No has creado ninguna oferta todavía.'),
+                  )
+                : ListView.builder(
+                    itemCount: viewModel.jobOffers.length,
+                    itemBuilder: (context, index) {
+                      final offer = viewModel.jobOffers[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12.0),
+                        child: InkWell(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => OfferDetailsDialog(
+                                offer: offer,
+                                viewModel: viewModel,
+                                onStatusChanged: () {
+                                  viewModel.fetchDashboardData();
+                                },
+                              ),
+                            );
+                          },
+                          child: ListTile(
+                            title: Text(offer.title),
+                            subtitle: Text(
+                              '${offer.location} - ${offer.salaryRange}',
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+
+    if (isMobile) {
+      return Column(
+        children: [
+          // Recent Activity (Fixed Height)
+          SizedBox(height: 300, child: recentActivityContent),
+          const Divider(height: 1),
+          // Create Offer Form (Auto height)
+          createOfferContent,
+          const Divider(height: 1),
+          // All Offers (Fixed Height)
+          SizedBox(height: 400, child: allOffersContent),
+        ],
+      );
+    } else {
+      // Desktop Layout
+      return Column(
+        children: [
+          // FILA 1: Ofertas Recientes y Crear Oferta
+          Expanded(
+            flex: 1,
+            child: Row(
+              children: [
+                // Sub-Columna 1: Ofertas Recientes (Resumen)
+                Expanded(child: recentActivityContent),
+                const VerticalDivider(width: 1),
+                // Sub-Columna 2: Formulario Crear Oferta
+                Expanded(child: createOfferContent),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
+          // FILA 2: Todas las Ofertas Creadas
+          Expanded(flex: 1, child: allOffersContent),
+        ],
+      );
+    }
   }
 }
 
