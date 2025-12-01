@@ -28,6 +28,7 @@ class _EditApplicantProfileDialogState
   late TextEditingController _phoneController;
   late TextEditingController _linkedinController;
   late TextEditingController _portfolioController;
+  final TextEditingController _skillController = TextEditingController();
 
   // Listas para guardar tus cosas mientras editas.
   late List<Skill> _skills;
@@ -62,6 +63,7 @@ class _EditApplicantProfileDialogState
     _phoneController.dispose();
     _linkedinController.dispose();
     _portfolioController.dispose();
+    _skillController.dispose();
     super.dispose();
   }
 
@@ -282,6 +284,7 @@ class _EditApplicantProfileDialogState
                             children: [
                               Expanded(
                                 child: TextField(
+                                  controller: _skillController,
                                   decoration: const InputDecoration(
                                     labelText: 'Nueva Habilidad',
                                     hintText: 'Ej: Flutter, Dart, SQL',
@@ -289,6 +292,7 @@ class _EditApplicantProfileDialogState
                                   onSubmitted: (value) {
                                     if (value.isNotEmpty) {
                                       _addSkill(value);
+                                      _skillController.clear();
                                     }
                                   },
                                 ),
