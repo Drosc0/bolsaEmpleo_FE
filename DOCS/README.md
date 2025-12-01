@@ -1,6 +1,6 @@
 # Documentación del Proyecto: Bolsa de Empleo
 
-[![English](https://img.icons8.com/color/48/great-britain.png )](README_EN)
+[![English](https://img.icons8.com/color/48/great-britain.png )](README_EN.md)
 
 ## Agradecimientos
 *(Esta sección es opcional. A rellenar por el autor si desea dedicar el proyecto a personas, instituciones o empresas).*
