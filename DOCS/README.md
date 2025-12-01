@@ -189,6 +189,7 @@ Arquitectura de N-Capas.
 *   **Tabla JobOffers**: Ofertas publicadas, FK a Companies.
 *   **Tabla Applications**: Relación N:M entre Applicants y JobOffers.
 
+
 ---
 
 ## Capítulo 7. Implementación del sistema
@@ -272,3 +273,8 @@ Se ha logrado desarrollar un sistema funcional que cumple con los objetivos de c
 *   **API**: Interfaz de Programación de Aplicaciones.
 *   **JWT**: JSON Web Token, estándar para autenticación.
 *   **Widget**: Elemento básico de construcción de interfaz en Flutter.
+
+### 10.2 Informacion mas detallada
+*   **[Documentación de Diseño](PROJECT_DESIGN_ES.md)**
+*   **[Documentación del Frontend](FRONTEND_DOCS_ES.md)**
+*   **[Documentación del Testing](TESTING_ES.md)**

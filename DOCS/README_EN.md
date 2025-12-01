@@ -280,3 +280,8 @@ A functional system has been developed that meets the objectives of connecting j
 * **API**: Application Programming Interface.
 * **JWT**: JSON Web Token, a standard for authentication.
 * **Widget**: Basic UI building block in Flutter.
+
+### 10.2 Informacion mas detallada
+*   **[Design Documentation](PROJECT_DESIGN_EN.md)**
+*   **[Frontend Documentation](FRONTEND_DOCS_EN.md)**
+*   **[Testing Documentation](TESTING_EN.md)**
