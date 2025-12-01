@@ -142,7 +142,7 @@ classDiagram
     }
 
     %% Relaciones
-    User "1" -- "1" AspirantProfile : tHas
+    User "1" -- "1" AspirantProfile : Has
     User "1" -- "1" CompanyProfile : Has
     CompanyProfile "1" -- "*" JobOffer : publish
     JobOffer "1" -- "*" Application : Gets
