@@ -1,5 +1,6 @@
 # Documentación del Proyecto: Bolsa de Empleo
 
+[!English](DOCS/PROJECT_DESIGN_EN)
 
 ## Agradecimientos
 *(Esta sección es opcional. A rellenar por el autor si desea dedicar el proyecto a personas, instituciones o empresas).*
