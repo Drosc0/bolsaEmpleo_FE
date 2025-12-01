@@ -54,3 +54,5 @@ The app currently uses Flutter's native **Navigator 1.0** (`Navigator.push`, `Na
 - **AuthViewModel**: Tracks authentication status and user role.
 - **HomeViewModel**: Manages the list of job offers and loading states (`loading`, `loaded`, `error`).
 - **ThemeViewModel**: Manages the application theme (Light/Dark).
+
+[BACK](README_EN.md)

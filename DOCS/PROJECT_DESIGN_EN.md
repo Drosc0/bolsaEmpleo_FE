@@ -150,3 +150,5 @@ classDiagram
     AspirantProfile "1" -- "*" ExperienceItem : Has
     AspirantProfile "1" -- "*" SkillItem : Has
 ```
+
+[BACK](README_EN.md)

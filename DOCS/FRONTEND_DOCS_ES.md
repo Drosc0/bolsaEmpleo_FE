@@ -54,3 +54,5 @@ La aplicación utiliza actualmente el **Navigator 1.0** nativo de Flutter (`Navi
 - **AuthViewModel**: Rastrea el estado de autenticación y el rol del usuario.
 - **HomeViewModel**: Gestiona la lista de ofertas de trabajo y los estados de carga (`loading`, `loaded`, `error`).
 - **ThemeViewModel**: Gestiona el tema de la aplicación (Claro/Oscuro).
+
+[VOLVER](README.md)
