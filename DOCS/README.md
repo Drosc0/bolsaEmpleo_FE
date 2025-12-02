@@ -442,11 +442,44 @@ erDiagram
 *   **Dart**: Versión 3.x (Frontend Flutter).
 *   **TypeScript**: Versión 5.x (Backend NestJS).
 
-### 7.3 Herramientas y programas usados
-*   **Visual Studio Code**: IDE principal.
-*   **Postman/Insomnia**: Pruebas de API.
-*   **Git**: Control de versiones.
-*   **Flutter DevTools**: Depuración y análisis de rendimiento.
+### 7.3 Herramientas y programas usados para el desarrollo
+Para la implementación de este sistema, se ha seleccionado un conjunto de herramientas modernas que facilitan el desarrollo ágil, la depuración y el despliegue. A continuación, se detallan las versiones y el propósito de cada una.
+
+#### 7.3.1 Visual Studio Code (VS Code)
+*   **Versión**: Última estable (v1.9x).
+*   **Tipo**: Entorno de Desarrollo Integrado (IDE).
+*   **Uso**: Editor de código principal tanto para el Frontend (Flutter) como para el Backend (NestJS).
+*   **Interacción**: Se han instalado extensiones clave como "Flutter", "Dart", "Prettier" y "ESLint" para facilitar el resaltado de sintaxis, el autocompletado y el formateo automático.
+
+#### 7.3.2 Flutter SDK & Dart
+*   **Versión**: Flutter 3.x / Dart 3.x.
+*   **Tipo**: Kit de desarrollo de software (SDK).
+*   **Uso**: Desarrollo de la interfaz de usuario multiplataforma.
+*   **Interacción**: Proporciona el framework de widgets, el compilador y las herramientas de línea de comandos (`flutter doctor`, `flutter run`) para construir y ejecutar la aplicación en simuladores y dispositivos físicos.
+
+#### 7.3.3 NestJS CLI & Node.js
+*   **Versión**: NestJS CLI 10.x / Node.js 20.x (LTS).
+*   **Tipo**: Framework Backend y Entorno de ejecución.
+*   **Uso**: Construcción de la API REST.
+*   **Interacción**: Node.js ejecuta el servidor, mientras que NestJS CLI permite generar módulos, controladores y servicios rápidamente (`nest g resource`), asegurando una estructura modular y escalable.
+
+#### 7.3.4 Docker Desktop
+*   **Versión**: 4.x.
+*   **Tipo**: Plataforma de contenedorización.
+*   **Uso**: Gestión de servicios auxiliares como la base de datos en entorno local.
+*   **Interacción**: Permite levantar una instancia de PostgreSQL aislada mediante `docker-compose`, garantizando que el entorno de desarrollo sea idéntico para todos los desarrolladores sin necesidad de instalar el motor de base de datos directamente en el sistema operativo.
+
+#### 7.3.5 Postman
+*   **Versión**: 10.x.
+*   **Tipo**: Cliente API.
+*   **Uso**: Pruebas manuales de los endpoints del Backend.
+*   **Interacción**: Se utiliza para enviar peticiones HTTP (GET, POST, PUT, DELETE) a la API, verificar los códigos de estado, inspeccionar los cuerpos de respuesta (JSON) y validar la autenticación mediante Bearer Tokens antes de integrar los endpoints en el Frontend.
+
+#### 7.3.6 Git & GitHub
+*   **Versión**: Git 2.x.
+*   **Tipo**: Sistema de Control de Versiones.
+*   **Uso**: Gestión del código fuente y colaboración.
+*   **Interacción**: Git rastrea los cambios locales, mientras que GitHub aloja el repositorio remoto, permitiendo el uso de ramas (branches) para desarrollar nuevas características (feature branches) y Pull Requests para la revisión de código.
 
 ### 7.4 Estructura del Frontend
 *   **lib/core**: Servicios fundamentales (ApiService, SecureStorageService), temas y utilidades.
