@@ -58,13 +58,13 @@ Bolsa de Empleo, Reclutamiento, Flutter, NestJS, PostgreSQL, Gestión de Candida
 6.3 DIAGRAMAS DE INTERACCIÓN Y ESTADOS
 6.4 DIAGRAMAS DE ACTIVIDADES
 6.5 DISEÑO DE LA BASE DE DATOS
-6.6 DISEÑO DE LA INTERFAZ
 
 ### CAPÍTULO 7. IMPLEMENTACIÓN DEL SISTEMA
 7.1 ESTÁNDARES Y NORMAS SEGUIDOS
 7.2 LENGUAJES DE PROGRAMACIÓN
 7.3 HERRAMIENTAS Y PROGRAMAS USADOS
-7.4 CREACIÓN DEL SISTEMA
+7.4 ESTRUCTURA DEL FRONTEND
+7.4.1 PROBLEMAS ENCONTRADOS
 
 ### CAPÍTULO 8. MANUALES DEL SISTEMA
 8.1 MANUAL DE INSTALACIÓN
@@ -176,18 +176,119 @@ El sistema abarcará la gestión completa del ciclo de vida de una oferta de emp
 ## Capítulo 6. Diseño del sistema
 
 ### 6.1 Arquitectura del sistema
-Arquitectura de N-Capas.
-*   **Frontend**: Capa de presentación (Flutter).
-*   **Backend**: Capa de lógica de negocio y acceso a datos (NestJS).
-*   **Base de Datos**: Capa de persistencia (PostgreSQL).
+El sistema sigue una arquitectura de microservicios lógica, separando claramente el Frontend (Cliente) del Backend (Servidor API), comunicándose a través de protocolo HTTP/REST.
+
+#### 6.1.1 Diagramas de paquetes
+La organización del código se estructura en paquetes funcionales para asegurar la modularidad.
+
+##### 6.1.1.1 Paquete Frontend (Flutter)
+*   `lib/core`: Contiene la infraestructura base (Servicios HTTP, Almacenamiento local, Configuración).
+*   `lib/data`: Capa de acceso a datos, incluyendo Modelos (DTOs) y Repositorios que implementan la comunicación con el Backend.
+*   `lib/presentation`: Capa de UI, organizada por características (`auth`, `home`, `dashboard`), conteniendo Vistas y ViewModels (Provider).
+
+##### 6.1.1.2 Paquete Backend (NestJS)
+*   `src/app`: Módulo raíz.
+*   `src/auth`: Módulo de seguridad y autenticación (Guards, Strategies).
+*   `src/users`: Gestión de entidades de usuario base.
+*   `src/company-profile` & `src/applicant-profile`: Gestión específica de perfiles.
+*   `src/jobs`: Gestión de ofertas de empleo.
+*   `src/applications`: Gestión de postulaciones.
+
+#### 6.1.2 Diagramas de componentes
+*   **Componente Cliente**: Aplicación Flutter compilada para Web/Móvil.
+*   **Componente Servidor**: API NestJS ejecutándose en Node.js.
+*   **Componente Base de Datos**: Instancia de PostgreSQL gestionada por Supabase.
+*   **Componente Autenticación**: Servicio de Auth de Supabase integrado.
+
+#### 6.1.3 Diagramas de despliegue
+El despliegue se visualiza en un entorno de nube híbrido.
+
+##### 6.1.3.1 Contenedor Docker / Servidor
+El backend se empaqueta en un contenedor Docker que expone el puerto 3000, conectado a la instancia de base de datos PostgreSQL remota. El frontend se sirve como activos estáticos (Web) o binarios nativos (Móvil).
+
+---
+
+### 6.2 Diseño de clases
+
+#### 6.2.1 Diagrama de clases
+El modelo de dominio principal incluye las siguientes entidades y relaciones:
+*   **User**: Clase base abstracta (id, email, password).
+*   **Company**: Hereda de User (companyName, description, sector). Tiene relación 1:N con **JobOffer**.
+*   **Applicant**: Hereda de User (firstName, lastName, cvUrl). Tiene relación 1:N con **Application**.
+*   **JobOffer**: Entidad oferta (title, description, salary). Tiene relación 1:N con **Application**.
+*   **Application**: Entidad asociativa (status, date). Relaciona Applicant y JobOffer.
+
+---
+
+### 6.3 Diagramas de interacción y estados
+
+#### 6.3.1 Caso de uso 1: Publicar Oferta
+Este caso de uso describe cómo una empresa registrada crea una nueva vacante en el sistema.
+
+![Diagrama Caso de Uso Publicar Oferta](https://via.placeholder.com/600x400?text=Diagrama+Caso+Uso+Publicar+Oferta)
+
+| Caso de uso 1 | Publicar Oferta de Empleo |
+| :--- | :--- |
+| **Precondiciones** | La empresa debe estar registrada y autenticada en el sistema. |
+| **Postcondiciones** | Se crea una nueva oferta visible para los candidatos y asociada a la empresa. |
+| **Actores** | Empresa. |
+| **Descripción** | 1. La empresa accede a su dashboard.<br>2. Selecciona la opción "Crear Oferta".<br>3. Rellena el formulario (título, descripción, salario, ubicación).<br>4. Confirma la publicación.<br>5. El sistema valida los datos y guarda la oferta. |
+| **Excepciones** | - Datos incompletos: El sistema muestra error y solicita corrección.<br>- Error de servidor: Se notifica a la empresa para intentar más tarde. |
+
+##### 6.3.1.1 Diagramas de interacción (comunicación y secuencia)
+*   **Secuencia**:
+    1.  `CompanyUser` -> `DashboardView`: Clic en "Crear Oferta".
+    2.  `DashboardView` -> `JobOfferForm`: Muestra formulario.
+    3.  `CompanyUser` -> `JobOfferForm`: Envía datos.
+    4.  `JobOfferForm` -> `CompanyViewModel`: `createOffer(data)`.
+    5.  `CompanyViewModel` -> `RecruitmentRepository`: `createJobOffer(data)`.
+    6.  `RecruitmentRepository` -> `ApiService`: `POST /jobs`.
+    7.  `ApiService` -> `Backend`: Procesa solicitud.
+    8.  `Backend` -> `Database`: `INSERT INTO job_offers`.
+    9.  `Database` --> `Backend`: Confirmación.
+    10. `Backend` --> `CompanyViewModel`: `201 Created`.
+    11. `CompanyViewModel` -> `DashboardView`: Actualiza lista de ofertas.
+
+##### 6.3.1.2 Diagramas de estados de las clases
+**Clase JobOffer**:
+*   **Estado Inicial**: `Borrador` (opcional, si se implementa guardado parcial).
+*   **Estado Activo**: `Publicada` (visible para candidatos).
+*   **Estado Final**: `Cerrada` (no admite más aplicaciones) o `Eliminada`.
+
+---
+
+### 6.4 Diagramas de actividades
+**Flujo de Postulación de Candidato**:
+1.  Inicio -> Buscar Oferta.
+2.  ¿Oferta interesante? -> No (Volver a buscar) | Sí (Ver detalles).
+3.  Ver detalles -> ¿Ya aplicado? -> Sí (Mostrar estado) | No (Botón Aplicar).
+4.  Clic Aplicar -> Confirmar envío de perfil.
+5.  Sistema crea `Application` -> Notificar éxito.
+6.  Fin.
+
+---
 
 ### 6.5 Diseño de la base de datos
-#### 6.5.3 Diagrama E-R (Descripción)
-*   **Tabla Users**: Almacena credenciales y rol.
-*   **Tabla Companies**: Extiende Users, datos de empresa.
-*   **Tabla Applicants**: Extiende Users, datos del candidato.
-*   **Tabla JobOffers**: Ofertas publicadas, FK a Companies.
-*   **Tabla Applications**: Relación N:M entre Applicants y JobOffers.
+Esta sección describe el sistema de gestión de bases de datos utilizado.
+
+#### 6.5.1 Descripción del SGBD usado
+Se utiliza **PostgreSQL**, un sistema de gestión de bases de datos relacional de objetos (ORDBMS) de código abierto, conocido por su fiabilidad, robustez de características y rendimiento.
+
+#### 6.5.2 Integración del SGBD en nuestro sistema
+La integración se realiza a través de **TypeORM** en el entorno NestJS. TypeORM actúa como un ORM (Object-Relational Mapper) que permite interactuar con la base de datos utilizando clases y objetos de TypeScript en lugar de escribir SQL puro, facilitando la migración y el mantenimiento de esquemas.
+
+#### 6.5.3 Diagrama E-R
+El esquema relacional consta de las siguientes tablas principales:
+*   **users**: Tabla padre para autenticación.
+    *   `id` (PK), `email`, `password`, `role`.
+*   **companies**:
+    *   `id` (FK users), `company_name`, `sector`, `description`.
+*   **applicants**:
+    *   `id` (FK users), `first_name`, `last_name`, `cv_url`.
+*   **job_offers**:
+    *   `id` (PK), `company_id` (FK companies), `title`, `description`, `salary`, `location`, `created_at`.
+*   **applications**:
+    *   `id` (PK), `job_offer_id` (FK job_offers), `applicant_id` (FK applicants), `status`, `applied_at`.
 
 
 ---
@@ -219,6 +320,21 @@ Arquitectura de N-Capas.
     *   **dashboard/applicant**: Dashboard de candidato con gestión de perfil y aplicaciones.
     *   **common**: Componentes compartidos y ThemeViewModel.
     *   **shared**: Widgets reutilizables.
+
+### 7.4.1 Problemas encontrados
+Enumeramos los problemas encontrados en el desarrollo y la solución que le hemos dado.
+
+#### 7.4.1.1 Persistencia del estado y navegación por roles
+*   **Problema**: Al navegar entre la home y el dashboard, o al recargar, se perdía el contexto del usuario o no había una forma clara de volver al panel de control específico de su rol (Candidato o Empresa).
+*   **Solución**: Se implementó `SecureStorageService` para persistir de forma segura el token y el rol del usuario. Se añadió lógica en `AuthViewModel` para restaurar la sesión al inicio y se incorporó un botón dinámico en la `HomePage` que redirige inteligentemente al dashboard correspondiente.
+
+#### 7.4.1.2 Errores de validación en actualización de perfiles (Error 400)
+*   **Problema**: Las peticiones de actualización de perfil fallaban con error 400 debido a que se enviaban campos no permitidos por el backend (como `location` en lugar de `address`) o campos de solo lectura.
+*   **Solución**: Se ajustaron los DTOs en el frontend para coincidir estrictamente con los esperados por el backend (`UpdateCompanyDto`, `UpdateApplicantDto`), filtrando los datos antes del envío.
+
+#### 7.4.1.3 Configuración de pruebas unitarias en NestJS
+*   **Problema**: Dificultades para configurar el entorno de pruebas unitarias aislado de la base de datos y conflictos con la configuración por defecto de Jest para pruebas e2e.
+*   **Solución**: Se creó una configuración específica para pruebas unitarias en el directorio `test/`, mockeando los repositorios y servicios externos (como `bcrypt`) para probar la lógica de negocio de `AuthService` y `CompanyProfileService` de forma aislada.
 
 ---
 
