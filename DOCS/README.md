@@ -270,18 +270,27 @@ graph TD
 
 #### 6.1.2 Diagramas de componentes
 ```mermaid
-C4Component
-    title Diagrama de Componentes del Sistema
-
-    Container(flutterApp, "Flutter App", "Dart/Flutter", "Cliente Móvil y Web")
-    Container(nestApi, "NestJS API", "Node.js/TypeScript", "Lógica de Negocio y API REST")
-    ContainerDb(postgres, "PostgreSQL", "SQL Database", "Almacenamiento de datos")
-    Container(supabaseAuth, "Supabase Auth", "Auth Service", "Gestión de Identidad")
-
-    Rel(flutterApp, nestApi, "Usa", "HTTP/JSON")
-    Rel(flutterApp, supabaseAuth, "Autentica", "HTTPS")
-    Rel(nestApi, postgres, "Lee/Escribe", "TypeORM")
-    Rel(nestApi, supabaseAuth, "Valida Tokens", "HTTPS")
+graph TB
+    subgraph Cliente["Cliente"]
+        FlutterApp["Flutter App<br/>(Dart/Flutter)<br/>Cliente Móvil y Web"]
+    end
+    
+    subgraph Backend["Backend"]
+        NestAPI["NestJS API<br/>(Node.js/TypeScript)<br/>Lógica de Negocio y API REST"]
+    end
+    
+    subgraph Servicios["Servicios Externos"]
+        Supabase["Supabase Auth<br/>(Auth Service)<br/>Gestión de Identidad"]
+    end
+    
+    subgraph Datos["Almacenamiento"]
+        PostgreSQL[("PostgreSQL<br/>(SQL Database)<br/>Almacenamiento de datos")]
+    end
+    
+    FlutterApp -->|"HTTP/JSON"| NestAPI
+    FlutterApp -->|"HTTPS<br/>Autentica"| Supabase
+    NestAPI -->|"TypeORM<br/>Lee/Escribe"| PostgreSQL
+    NestAPI -->|"HTTPS<br/>Valida Tokens"| Supabase
 ```
 
 #### 6.1.3 Diagramas de despliegue
@@ -363,10 +372,14 @@ El modelo de dominio principal incluye las siguientes entidades y relaciones:
 Este caso de uso describe cómo una empresa registrada crea una nueva vacante en el sistema.
 
 ```mermaid
-useCaseDiagram
-    actor "Empresa" as C
-    usecase "Publicar Oferta" as UC1
-    C --> UC1
+flowchart LR
+    Empresa(["👤 Empresa"])
+    UC1["Publicar Oferta"]
+    
+    Empresa --> UC1
+    
+    style UC1 fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style Empresa fill:#fff3e0,stroke:#e65100,stroke-width:2px
 ```
 
 | Caso de uso 1 | Publicar Oferta de Empleo |
