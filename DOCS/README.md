@@ -181,6 +181,21 @@ El sistema sigue una arquitectura de microservicios lógica, separando clarament
 #### 6.1.1 Diagramas de paquetes
 La organización del código se estructura en paquetes funcionales para asegurar la modularidad.
 
+```mermaid
+graph TD
+    subgraph Frontend_Flutter
+        Core[lib/core]
+        Data[lib/data]
+        Presentation[lib/presentation]
+    end
+    subgraph Backend_NestJS
+        Auth[src/auth]
+        Users[src/users]
+        Jobs[src/jobs]
+        Applications[src/applications]
+    end
+```
+
 ##### 6.1.1.1 Paquete Frontend (Flutter)
 *   `lib/core`: Contiene la infraestructura base (Servicios HTTP, Almacenamiento local, Configuración).
 *   `lib/data`: Capa de acceso a datos, incluyendo Modelos (DTOs) y Repositorios que implementan la comunicación con el Backend.
@@ -195,13 +210,40 @@ La organización del código se estructura en paquetes funcionales para asegurar
 *   `src/applications`: Gestión de postulaciones.
 
 #### 6.1.2 Diagramas de componentes
-*   **Componente Cliente**: Aplicación Flutter compilada para Web/Móvil.
-*   **Componente Servidor**: API NestJS ejecutándose en Node.js.
-*   **Componente Base de Datos**: Instancia de PostgreSQL gestionada por Supabase.
-*   **Componente Autenticación**: Servicio de Auth de Supabase integrado.
+```mermaid
+C4Component
+    title Diagrama de Componentes del Sistema
+
+    Container(flutterApp, "Flutter App", "Dart/Flutter", "Cliente Móvil y Web")
+    Container(nestApi, "NestJS API", "Node.js/TypeScript", "Lógica de Negocio y API REST")
+    ContainerDb(postgres, "PostgreSQL", "SQL Database", "Almacenamiento de datos")
+    Container(supabaseAuth, "Supabase Auth", "Auth Service", "Gestión de Identidad")
+
+    Rel(flutterApp, nestApi, "Usa", "HTTP/JSON")
+    Rel(flutterApp, supabaseAuth, "Autentica", "HTTPS")
+    Rel(nestApi, postgres, "Lee/Escribe", "TypeORM")
+    Rel(nestApi, supabaseAuth, "Valida Tokens", "HTTPS")
+```
 
 #### 6.1.3 Diagramas de despliegue
 El despliegue se visualiza en un entorno de nube híbrido.
+
+```mermaid
+graph TD
+    subgraph Client_Device [Dispositivo Cliente]
+        FlutterApp[Flutter App]
+    end
+    
+    subgraph Cloud_Environment [Entorno Cloud]
+        subgraph Docker_Host [Servidor Docker]
+            NestJS[Contenedor NestJS API]
+        end
+        DB[(PostgreSQL DB)]
+    end
+    
+    FlutterApp -- HTTPS (JSON) --> NestJS
+    NestJS -- TCP:5432 --> DB
+```
 
 ##### 6.1.3.1 Contenedor Docker / Servidor
 El backend se empaqueta en un contenedor Docker que expone el puerto 3000, conectado a la instancia de base de datos PostgreSQL remota. El frontend se sirve como activos estáticos (Web) o binarios nativos (Móvil).
@@ -211,6 +253,42 @@ El backend se empaqueta en un contenedor Docker que expone el puerto 3000, conec
 ### 6.2 Diseño de clases
 
 #### 6.2.1 Diagrama de clases
+```mermaid
+classDiagram
+    class User {
+        +id: string
+        +email: string
+        +password: string
+        +role: Role
+    }
+    class Company {
+        +companyName: string
+        +description: string
+        +sector: string
+    }
+    class Applicant {
+        +firstName: string
+        +lastName: string
+        +cvUrl: string
+    }
+    class JobOffer {
+        +title: string
+        +description: string
+        +salary: number
+        +location: string
+    }
+    class Application {
+        +status: ApplicationStatus
+        +appliedAt: Date
+    }
+
+    User <|-- Company
+    User <|-- Applicant
+    Company "1" --> "*" JobOffer : publishes
+    Applicant "1" --> "*" Application : makes
+    JobOffer "1" --> "*" Application : receives
+```
+
 El modelo de dominio principal incluye las siguientes entidades y relaciones:
 *   **User**: Clase base abstracta (id, email, password).
 *   **Company**: Hereda de User (companyName, description, sector). Tiene relación 1:N con **JobOffer**.
@@ -225,7 +303,12 @@ El modelo de dominio principal incluye las siguientes entidades y relaciones:
 #### 6.3.1 Caso de uso 1: Publicar Oferta
 Este caso de uso describe cómo una empresa registrada crea una nueva vacante en el sistema.
 
-![Diagrama Caso de Uso Publicar Oferta](https://via.placeholder.com/600x400?text=Diagrama+Caso+Uso+Publicar+Oferta)
+```mermaid
+useCaseDiagram
+    actor "Empresa" as C
+    usecase "Publicar Oferta" as UC1
+    C --> UC1
+```
 
 | Caso de uso 1 | Publicar Oferta de Empleo |
 | :--- | :--- |
@@ -236,35 +319,63 @@ Este caso de uso describe cómo una empresa registrada crea una nueva vacante en
 | **Excepciones** | - Datos incompletos: El sistema muestra error y solicita corrección.<br>- Error de servidor: Se notifica a la empresa para intentar más tarde. |
 
 ##### 6.3.1.1 Diagramas de interacción (comunicación y secuencia)
-*   **Secuencia**:
-    1.  `CompanyUser` -> `DashboardView`: Clic en "Crear Oferta".
-    2.  `DashboardView` -> `JobOfferForm`: Muestra formulario.
-    3.  `CompanyUser` -> `JobOfferForm`: Envía datos.
-    4.  `JobOfferForm` -> `CompanyViewModel`: `createOffer(data)`.
-    5.  `CompanyViewModel` -> `RecruitmentRepository`: `createJobOffer(data)`.
-    6.  `RecruitmentRepository` -> `ApiService`: `POST /jobs`.
-    7.  `ApiService` -> `Backend`: Procesa solicitud.
-    8.  `Backend` -> `Database`: `INSERT INTO job_offers`.
-    9.  `Database` --> `Backend`: Confirmación.
-    10. `Backend` --> `CompanyViewModel`: `201 Created`.
-    11. `CompanyViewModel` -> `DashboardView`: Actualiza lista de ofertas.
+```mermaid
+sequenceDiagram
+    participant U as CompanyUser
+    participant V as DashboardView
+    participant VM as CompanyViewModel
+    participant R as RecruitmentRepo
+    participant API as ApiService
+    participant BE as Backend
+    participant DB as Database
+
+    U->>V: Clic "Crear Oferta"
+    V->>U: Muestra Formulario
+    U->>V: Rellena y Envia
+    V->>VM: createOffer(data)
+    VM->>R: createJobOffer(data)
+    R->>API: POST /jobs
+    API->>BE: HTTP Request
+    BE->>DB: INSERT job_offer
+    DB-->>BE: OK
+    BE-->>API: 201 Created
+    API-->>R: Success
+    R-->>VM: Success
+    VM-->>V: Update State
+    V-->>U: Show Success Message
+```
 
 ##### 6.3.1.2 Diagramas de estados de las clases
 **Clase JobOffer**:
-*   **Estado Inicial**: `Borrador` (opcional, si se implementa guardado parcial).
-*   **Estado Activo**: `Publicada` (visible para candidatos).
-*   **Estado Final**: `Cerrada` (no admite más aplicaciones) o `Eliminada`.
+```mermaid
+stateDiagram-v2
+    [*] --> Borrador
+    Borrador --> Publicada : Publicar
+    Publicada --> Cerrada : Cerrar Oferta
+    Publicada --> Eliminada : Eliminar
+    Cerrada --> [*]
+    Eliminada --> [*]
+```
 
 ---
 
 ### 6.4 Diagramas de actividades
 **Flujo de Postulación de Candidato**:
-1.  Inicio -> Buscar Oferta.
-2.  ¿Oferta interesante? -> No (Volver a buscar) | Sí (Ver detalles).
-3.  Ver detalles -> ¿Ya aplicado? -> Sí (Mostrar estado) | No (Botón Aplicar).
-4.  Clic Aplicar -> Confirmar envío de perfil.
-5.  Sistema crea `Application` -> Notificar éxito.
-6.  Fin.
+
+```mermaid
+graph TD
+    A[Inicio] --> B[Buscar Oferta]
+    B --> C{¿Oferta interesante?}
+    C -- No --> B
+    C -- Sí --> D[Ver Detalles]
+    D --> E{¿Ya aplicado?}
+    E -- Sí --> F[Ver Estado]
+    E -- No --> G[Clic Aplicar]
+    G --> H[Confirmar Envío]
+    H --> I[Sistema crea Application]
+    I --> J[Notificar Éxito]
+    J --> K[Fin]
+```
 
 ---
 
@@ -279,16 +390,43 @@ La integración se realiza a través de **TypeORM** en el entorno NestJS. TypeOR
 
 #### 6.5.3 Diagrama E-R
 El esquema relacional consta de las siguientes tablas principales:
-*   **users**: Tabla padre para autenticación.
-    *   `id` (PK), `email`, `password`, `role`.
-*   **companies**:
-    *   `id` (FK users), `company_name`, `sector`, `description`.
-*   **applicants**:
-    *   `id` (FK users), `first_name`, `last_name`, `cv_url`.
-*   **job_offers**:
-    *   `id` (PK), `company_id` (FK companies), `title`, `description`, `salary`, `location`, `created_at`.
-*   **applications**:
-    *   `id` (PK), `job_offer_id` (FK job_offers), `applicant_id` (FK applicants), `status`, `applied_at`.
+
+```mermaid
+erDiagram
+    USERS ||--|| COMPANIES : "is a"
+    USERS ||--|| APPLICANTS : "is a"
+    COMPANIES ||--o{ JOB_OFFERS : "posts"
+    APPLICANTS ||--o{ APPLICATIONS : "submits"
+    JOB_OFFERS ||--o{ APPLICATIONS : "receives"
+
+    USERS {
+        string id PK
+        string email
+        string password
+        string role
+    }
+    COMPANIES {
+        string id FK
+        string company_name
+        string sector
+    }
+    APPLICANTS {
+        string id FK
+        string first_name
+        string last_name
+    }
+    JOB_OFFERS {
+        string id PK
+        string title
+        string description
+        float salary
+    }
+    APPLICATIONS {
+        string id PK
+        string status
+        date applied_at
+    }
+```
 
 
 ---
