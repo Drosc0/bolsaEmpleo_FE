@@ -50,6 +50,13 @@ Bolsa de Empleo, Reclutamiento, Flutter, NestJS, PostgreSQL, Gestión de Candida
 ### CAPÍTULO 5. PLAN DE PRUEBAS
 5.1 INTRODUCCIÓN
 5.2 DISEÑO Y PLANIFICACIÓN DEL PLAN DE PRUEBAS
+5.2.1 PRUEBAS UNITARIAS
+5.2.2 PRUEBAS DE INTEGRACIÓN
+5.2.3 PRUEBAS DE INTEGRIDAD DE LOS DATOS Y LA BASE DE DATOS
+5.2.4 PRUEBAS FUNCIONALES
+5.2.5 PRUEBAS DE INTERFAZ DE USUARIO
+5.2.6 PRUEBAS DE SEGURIDAD
+5.2.7 PRUEBAS DE USABILIDAD Y ACCESIBILIDAD
 5.3 ANÁLISIS E INTERPRETACIÓN DE RESULTADOS
 
 ### CAPÍTULO 6. DISEÑO DEL SISTEMA
@@ -166,10 +173,62 @@ El sistema abarcará la gestión completa del ciclo de vida de una oferta de emp
 
 ## Capítulo 5. Plan de pruebas
 
-### 5.2 Diseño y planificación
-*   **Pruebas Unitarias**: Verificación de lógica de negocio en servicios de NestJS y repositorios.
-*   **Pruebas de Integración**: Verificación de endpoints de la API (Controladores + Servicios + BD).
-*   **Pruebas Funcionales**: Flujos completos de usuario (Registro -> Login -> Crear Oferta).
+### 5.1 Introducción
+Este capítulo de plan de pruebas permitirá evaluar aspectos como: la funcionalidad, la seguridad y la usabilidad al realizar un seguimiento de las pruebas realizadas, así como el control de los resultados. El diseño y desarrollo del mismo se llevará a cabo a través de los siguientes apartados:
+*   Diseño y planificación del plan de pruebas
+*   Análisis e interpretación de resultados obtenidos tras la ejecución del plan de pruebas
+
+### 5.2 Diseño y planificación del plan de pruebas
+Con el fin de detectar errores en el desarrollo de la aplicación se ha diseñado un plan de pruebas dividiendo estas en los distintos tipos de pruebas como son:
+*   Pruebas unitarias
+*   Pruebas de integración
+*   Pruebas de integridad de los datos y la base de datos
+*   Pruebas funcionales
+*   Pruebas de interfaz de usuario
+*   Pruebas de seguridad
+*   Pruebas de usabilidad y accesibilidad
+
+A modo de guía se incluyen una serie de tablas para recopilar en ellas la información de su participación en el plan de pruebas.
+
+#### 5.2.1 Pruebas unitarias
+| Objetivo | Técnicas |
+| :--- | :--- |
+| Verificar el correcto funcionamiento de unidades individuales de código (funciones, métodos, clases) de forma aislada. | **Backend**: Uso de **Jest** para probar Servicios y Controladores mockeando dependencias.<br>**Frontend**: Uso de `flutter_test` para probar ViewModels y lógica de negocio pura. |
+
+#### 5.2.2 Pruebas de integración
+| Objetivo | Técnicas |
+| :--- | :--- |
+| Verificar que los distintos módulos y servicios interactúan correctamente entre sí y con sistemas externos (Base de Datos). | **Backend**: Pruebas con **Supertest** sobre la API REST levantando un entorno de pruebas.<br>**Frontend**: Pruebas de integración de widgets que simulan interacción con repositorios reales o mockeados. |
+
+#### 5.2.3 Pruebas de integridad de los datos y la base de datos
+| Objetivo | Técnicas |
+| :--- | :--- |
+| Asegurar que los datos almacenados son consistentes, válidos y respetan las restricciones del modelo relacional. | **Validación DTO**: Uso de `class-validator` en NestJS para asegurar tipos y formatos antes de llegar a la BD.<br>**Restricciones SQL**: Definición de Foreign Keys, Unique Constraints y Not Null en las entidades de TypeORM. |
+
+#### 5.2.4 Pruebas funcionales
+**Caso de uso**: Publicar Oferta, Registrar Usuario, Aplicar a Oferta.
+
+| Objetivo | Técnicas |
+| :--- | :--- |
+| Validar que el sistema cumple con los requisitos funcionales especificados y realiza las operaciones esperadas por el usuario. | **Pruebas Manuales**: Ejecución paso a paso de los flujos principales (Happy Path y casos de error) en el entorno de desarrollo.<br>**Postman**: Validación de flujos de API completos. |
+
+#### 5.2.5 Pruebas de interfaz de usuario
+| Objetivo | Técnicas |
+| :--- | :--- |
+| Verificar que la interfaz se renderiza correctamente, es responsiva y reacciona adecuadamente a las interacciones del usuario. | **Widget Testing**: Pruebas automatizadas en Flutter para verificar la presencia y estado de widgets.<br>**Revisión Visual**: Comprobación manual de alineación, colores y tipografía en distintos tamaños de pantalla. |
+
+#### 5.2.6 Pruebas de seguridad
+| Objetivo | Técnicas |
+| :--- | :--- |
+| Garantizar que el sistema protege la información sensible y solo permite el acceso a usuarios autorizados. | **JWT Auth**: Verificación de tokens en endpoints protegidos.<br>**Role Guards**: Pruebas de acceso a rutas de Empresa con rol de Candidato (y viceversa) para confirmar bloqueo.<br>**Secure Storage**: Verificación de almacenamiento encriptado de tokens en el dispositivo. |
+
+#### 5.2.7 Pruebas de usabilidad y accesibilidad
+| Objetivo | Técnicas |
+| :--- | :--- |
+| Asegurar que la aplicación es intuitiva, fácil de usar y accesible para el mayor número de usuarios posible. | **Navegación**: Verificación de flujos lógicos y botones de retorno.<br>**Feedback**: Comprobación de mensajes de error claros y notificaciones de éxito (Snackbars).<br>**Contraste**: Uso de colores con suficiente contraste para legibilidad. |
+
+### 5.3 Análisis e interpretación de resultados obtenidos tras la ejecución del plan de pruebas
+Tras la ejecución de las pruebas descritas, se ha verificado que los módulos críticos (Autenticación, Gestión de Ofertas) funcionan correctamente bajo condiciones normales. Las pruebas unitarias cubren la lógica de negocio principal, y las pruebas manuales han validado la integración entre el Frontend Flutter y el Backend NestJS. Se han corregido errores de validación detectados en la fase de pruebas funcionales (ver sección 7.4.1).
 
 ---
 
