@@ -1,13 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'auth_view_model_test.mocks.dart';
 import 'package:mockito/mockito.dart';
 import 'package:bolsa_empleo/presentation/auth/viewmodel/auth_view_model.dart';
 import 'package:bolsa_empleo/data/repositories/auth_repository.dart';
-import 'package:bolsa_empleo/data/models/auth_tokens_model.dart';
+import 'package:bolsa_empleo/data/models/user_tokens_model.dart';
 import 'dart:io';
 
 // Manual mock class
-class MockAuthRepository extends Mock implements AuthRepository {}
-
+@GenerateMocks([AuthRepository])
 void main() {
   late AuthViewModel viewModel;
   late MockAuthRepository mockRepository;
@@ -22,7 +23,7 @@ void main() {
   });
 
   group('AuthViewModel', () {
-    test('initial state should be initial or unauthenticated', () {
+    test('el estado inicial debería ser initial o unauthenticated', () {
       // The constructor calls checkAuthStatus which is async
       // So we just verify the viewModel is created
       expect(viewModel, isNotNull);
@@ -31,7 +32,7 @@ void main() {
 
     group('checkAuthStatus', () {
       test(
-        'should set status to authenticated when user is logged in',
+        'debería establecer el estado a authenticated cuando el usuario está logueado',
         () async {
           when(mockRepository.isAuthenticated()).thenAnswer((_) async => true);
           when(
@@ -46,7 +47,7 @@ void main() {
       );
 
       test(
-        'should set status to unauthenticated when user is not logged in',
+        'debería establecer el estado a unauthenticated cuando el usuario no está logueado',
         () async {
           when(mockRepository.isAuthenticated()).thenAnswer((_) async => false);
 
@@ -59,41 +60,50 @@ void main() {
     });
 
     group('login', () {
-      test('should login successfully and set authenticated status', () async {
-        final tokens = AuthTokens(
-          token: 'test-token',
-          userId: 1,
-          userRole: 'empresa',
-        );
+      test(
+        'debería iniciar sesión exitosamente y establecer el estado a authenticated',
+        () async {
+          final tokens = UserTokens(
+            accessToken: 'test-token',
+            userId: 1,
+            userRole: 'empresa',
+          );
 
-        when(
-          mockRepository.login('test@example.com', 'password123'),
-        ).thenAnswer((_) async => tokens);
+          when(
+            mockRepository.login('test@example.com', 'password123'),
+          ).thenAnswer((_) async => tokens);
 
-        final result = await viewModel.login('test@example.com', 'password123');
+          final result = await viewModel.login(
+            'test@example.com',
+            'password123',
+          );
 
-        expect(result, true);
-        expect(viewModel.status, AuthStatus.authenticated);
-        expect(viewModel.userRole, 'empresa');
-        expect(viewModel.errorMessage, null);
-      });
+          expect(result, true);
+          expect(viewModel.status, AuthStatus.authenticated);
+          expect(viewModel.userRole, 'empresa');
+          expect(viewModel.errorMessage, null);
+        },
+      );
 
-      test('should handle HttpException and set error message', () async {
-        when(
-          mockRepository.login('test@example.com', 'wrongpassword'),
-        ).thenThrow(const HttpException('Credenciales inválidas'));
+      test(
+        'debería manejar HttpException y establecer el mensaje de error',
+        () async {
+          when(
+            mockRepository.login('test@example.com', 'wrongpassword'),
+          ).thenThrow(const HttpException('Credenciales inválidas'));
 
-        final result = await viewModel.login(
-          'test@example.com',
-          'wrongpassword',
-        );
+          final result = await viewModel.login(
+            'test@example.com',
+            'wrongpassword',
+          );
 
-        expect(result, false);
-        expect(viewModel.status, AuthStatus.unauthenticated);
-        expect(viewModel.errorMessage, 'Credenciales inválidas');
-      });
+          expect(result, false);
+          expect(viewModel.status, AuthStatus.unauthenticated);
+          expect(viewModel.errorMessage, 'Credenciales inválidas');
+        },
+      );
 
-      test('should handle generic exception', () async {
+      test('debería manejar una excepción genérica', () async {
         when(
           mockRepository.login('test@example.com', 'password'),
         ).thenThrow(Exception('Network error'));
@@ -108,15 +118,17 @@ void main() {
     });
 
     group('logout', () {
-      test('should logout and clear user data', () async {
+      test('debería cerrar sesión y limpiar los datos del usuario', () async {
         // First login
-        final tokens = AuthTokens(
-          token: 'test-token',
+        final tokens = UserTokens(
+          accessToken: 'test-token',
           userId: 1,
           userRole: 'aspirante',
         );
 
-        when(mockRepository.login(any, any)).thenAnswer((_) async => tokens);
+        when(
+          mockRepository.login('test@example.com', 'password'),
+        ).thenAnswer((_) async => tokens);
         when(mockRepository.logout()).thenAnswer((_) async => {});
 
         await viewModel.login('test@example.com', 'password');
@@ -132,9 +144,9 @@ void main() {
     });
 
     group('register', () {
-      test('should register successfully', () async {
-        final tokens = AuthTokens(
-          token: 'test-token',
+      test('debería registrarse exitosamente', () async {
+        final tokens = UserTokens(
+          accessToken: 'test-token',
           userId: 1,
           userRole: 'empresa',
         );
@@ -155,9 +167,13 @@ void main() {
         expect(viewModel.errorMessage, null);
       });
 
-      test('should handle registration error', () async {
+      test('debería manejar error de registro', () async {
         when(
-          mockRepository.register(any, any, any),
+          mockRepository.register(
+            'existing@example.com',
+            'password',
+            'aspirante',
+          ),
         ).thenThrow(const HttpException('Email ya registrado'));
 
         final result = await viewModel.register(
@@ -171,9 +187,9 @@ void main() {
         expect(viewModel.errorMessage, 'Email ya registrado');
       });
 
-      test('should handle generic registration error', () async {
+      test('debería manejar error genérico de registro', () async {
         when(
-          mockRepository.register(any, any, any),
+          mockRepository.register('test@example.com', 'password', 'aspirante'),
         ).thenThrow(Exception('Server error'));
 
         final result = await viewModel.register(
