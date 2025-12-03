@@ -54,7 +54,7 @@ class _CompanyDashboardContent extends StatelessWidget {
             )
           : LayoutBuilder(
               builder: (context, constraints) {
-                if (constraints.maxWidth > 800) {
+                if (constraints.maxWidth > 600) {
                   return _DesktopLayout(viewModel: viewModel);
                 } else {
                   return _MobileLayout(viewModel: viewModel);
